@@ -30,12 +30,19 @@ py -3 main.py
 
 - [docs/text-creation-guideline.md](docs/text-creation-guideline.md)
 
+## LoRA 学習のガイドライン
+
+`prepare_manifest.py` から `train.py` までの流れ、YAML の選び方、Studio の LoRA タブの使い方は次を参照してください。
+
+- [docs/lora-training-guideline.md](docs/lora-training-guideline.md)
+
 ## GUI の使い方
 
 1. **Irodori-TTS フォルダ**: `infer.py` があるディレクトリ（既定は隣の `Irodori-TTS`）。
 2. **モードのタブ**:
    - `参照音声（基本モデル）`: 参照 WAV で声を寄せる
    - `VoiceDesign（キャプション）`: 参照なしで、キャプションで話者を指定する
+   - `LoRA 作成（学習）`: `train.py` で LoRA を学習（manifest 準備が必要。[LoRA 学習のガイドライン](docs/lora-training-guideline.md) 参照）
 3. **保存プロファイル**: 自分で保存した設定・本文・キャプション等をまとめて呼び出します。
 4. **台本サンプル**: 最初から入っている本文例を差し替えます。
 5. **読み上げテキスト**: 本文。絵文字ボタンから感情用の絵文字を挿入できます。
@@ -46,7 +53,7 @@ py -3 main.py
 
 ## ヘルプ
 
-- アプリの **ヘルプ** メニューから、テキスト作成ガイドと VoiceDesign の参考リンクを開けます。
+- アプリの **ヘルプ** メニューから、テキスト作成ガイド・LoRA 学習ガイド・VoiceDesign の参考リンクを開けます。
 
 ## ディレクトリ構成の例
 

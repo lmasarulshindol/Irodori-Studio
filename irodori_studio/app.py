@@ -47,6 +47,7 @@ CHECKPOINT_LABEL_TO_ID = dict(CHECKPOINTS)
 CHECKPOINT_LABELS = [c[0] for c in CHECKPOINTS]
 BASE_CHECKPOINT_LABEL = CHECKPOINTS[0][0]
 TEXT_GUIDE_PATH = studio_root() / "docs" / "text-creation-guideline.md"
+LORA_GUIDE_PATH = studio_root() / "docs" / "lora-training-guideline.md"
 PROFILE_PLACEHOLDER = "保存プロファイルを選ぶ…"
 HISTORY_PLACEHOLDER = "履歴を選ぶ…"
 
@@ -243,6 +244,10 @@ class IrodoriStudioApp:
         help_menu.add_command(
             label="テキスト作成ガイドを開く",
             command=self._open_text_creation_guide,
+        )
+        help_menu.add_command(
+            label="LoRA 作成ガイドを開く",
+            command=self._open_lora_training_guide,
         )
         help_menu.add_command(
             label="VoiceDesign モデルカード（HF）",
@@ -628,8 +633,13 @@ class IrodoriStudioApp:
         self._combo_history.bind("<<ComboboxSelected>>", self._refresh_action_buttons)
         self._refresh_action_buttons()
 
-        f2 = Frame(inner)
-        f2.pack(fill="x", **pad)
+        self._history_row_frame = fh
+        self._infer_form_pack = {"fill": "x", "padx": 8, "pady": 3}
+        self._infer_only_frame = Frame(inner)
+        self._infer_only_frame.pack(after=fh, **self._infer_form_pack)
+
+        f2 = Frame(self._infer_only_frame)
+        f2.pack(fill="x", pady=(0, 3))
         row_t = Frame(f2)
         row_t.pack(fill="x")
         Label(row_t, text="読み上げテキスト（絵文字で感情表現可）").pack(side="left")
@@ -668,23 +678,23 @@ class IrodoriStudioApp:
         self.txt_body.pack(fill="x", pady=(2, 0))
         self.txt_body.insert("1.0", DEFAULT_SAMPLE_TEXT)
 
-        f_emoji = Frame(inner)
-        f_emoji.pack(fill="x", **pad)
+        f_emoji = Frame(self._infer_only_frame)
+        f_emoji.pack(fill="x", pady=(0, 3))
         Label(f_emoji, text="絵文字:").pack(side="left")
         for em in EMOJI_PRESETS[:8]:
             Button(f_emoji, text=em, width=3, command=lambda e=em: self._insert_emoji(e)).pack(
                 side="left", padx=1
             )
-        f_emoji2 = Frame(inner)
-        f_emoji2.pack(fill="x", **pad)
+        f_emoji2 = Frame(self._infer_only_frame)
+        f_emoji2.pack(fill="x", pady=(0, 3))
         Label(f_emoji2, text="").pack(side="left", padx=32)
         for em in EMOJI_PRESETS[8:]:
             Button(f_emoji2, text=em, width=3, command=lambda e=em: self._insert_emoji(e)).pack(
                 side="left", padx=1
             )
 
-        f5 = Frame(inner)
-        f5.pack(fill="x", **pad)
+        f5 = Frame(self._infer_only_frame)
+        f5.pack(fill="x", pady=(0, 3))
         Checkbutton(
             f5,
             text="ファイル名自動",
@@ -698,8 +708,8 @@ class IrodoriStudioApp:
         Button(f5, text="フォルダ", command=self._open_output_folder).pack(side="left", padx=2)
         Button(f5, text="パスコピー", command=self._copy_output_path).pack(side="left", padx=2)
         Button(f5, text="再生", command=self._play_output_wav).pack(side="left", padx=2)
-        f5h = Frame(inner)
-        f5h.pack(fill="x", padx=8, pady=(0, 2))
+        f5h = Frame(self._infer_only_frame)
+        f5h.pack(fill="x", pady=(0, 2))
         Label(
             f5h,
             text="自動ON: outputs/generated に「声の種類_セリフ先頭_連番.wav」で保存（探しやすい）",
@@ -709,8 +719,8 @@ class IrodoriStudioApp:
             justify="left",
         ).pack(anchor="w")
 
-        f6 = Frame(inner)
-        f6.pack(fill="x", **pad)
+        f6 = Frame(self._infer_only_frame)
+        f6.pack(fill="x", pady=(0, 0))
         Label(f6, text="デバイス").pack(side="left")
         self._device_combo = ttk.Combobox(
             f6,
@@ -742,6 +752,25 @@ class IrodoriStudioApp:
             return vd_presets.VOICEDESIGN_CHECKPOINT_LABEL
         return BASE_CHECKPOINT_LABEL
 
+    def _sync_infer_form_visibility(self) -> None:
+        """LoRA タブでは推論専用ブロック（本文・絵文字・出力・推論デバイス等）を隠す。"""
+        try:
+            fr = self._infer_only_frame
+            anchor = self._history_row_frame
+            kw = self._infer_form_pack
+        except AttributeError:
+            return
+        try:
+            idx = self._notebook.index(self._notebook.select())
+        except TclError:
+            idx = 0
+        if idx == 2:
+            if fr.winfo_ismapped():
+                fr.pack_forget()
+        else:
+            if not fr.winfo_ismapped():
+                fr.pack(after=anchor, **kw)
+
     def _on_notebook_tab_changed(self, _event: object = None) -> None:
         try:
             title = self._notebook.tab(self._notebook.select(), "text")
@@ -759,6 +788,7 @@ class IrodoriStudioApp:
             self.status.set(f"モード: {title}")
             if not self._job_running:
                 self.btn_gen.configure(state="normal")
+        self._sync_infer_form_visibility()
 
     def _refresh_action_buttons(self, _event: object = None) -> None:
         profile_ready = self.var_preset_pick.get().strip() not in {"", PROFILE_PLACEHOLDER}
@@ -831,6 +861,12 @@ class IrodoriStudioApp:
             messagebox.showerror("ガイド", f"ガイドが見つかりません:\n{TEXT_GUIDE_PATH}")
             return
         _open_path_windows(TEXT_GUIDE_PATH)
+
+    def _open_lora_training_guide(self) -> None:
+        if not LORA_GUIDE_PATH.is_file():
+            messagebox.showerror("ガイド", f"ガイドが見つかりません:\n{LORA_GUIDE_PATH}")
+            return
+        _open_path_windows(LORA_GUIDE_PATH)
 
     def _open_emoji_annotations(self) -> None:
         webbrowser.open(
@@ -1579,7 +1615,7 @@ class IrodoriStudioApp:
             "【タブ】\n"
             "・参照音声 … 基本モデル＋参照 WAV（または参照なし）\n"
             "・VoiceDesign … キャプションで話者指定（キャラプリセット利用可）\n"
-            "・LoRA 作成 … train.py で学習（manifest 準備が必要。ヘルプに公式手順）\n\n"
+            "・LoRA 作成 … train.py で学習（manifest 準備が必要。ヘルプの LoRA ガイド参照）\n\n"
             "・保存プロファイルは、自分で保存した設定と本文の呼び出し用です。\n"
             "・台本サンプルは、最初から入っている例文の差し替え用です。\n"
             "・起動時は先頭プリセットが入っています。\n"
