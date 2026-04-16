@@ -272,6 +272,7 @@ class IrodoriStudioApp:
         self._build_form(upper)
         self._build_log(lower)
         self._setup_form_canvas_mousewheel()
+        self._on_notebook_tab_changed()
 
     def _build_log(self, parent: Frame) -> None:
         f = Frame(parent)
@@ -582,7 +583,6 @@ class IrodoriStudioApp:
         self.btn_lora_run.pack(side="left")
 
         self._notebook.bind("<<NotebookTabChanged>>", self._on_notebook_tab_changed)
-        self._on_notebook_tab_changed()
         self._combo_vd_char.bind("<<ComboboxSelected>>", self._on_voice_character_selected)
 
         fp = Frame(inner)
