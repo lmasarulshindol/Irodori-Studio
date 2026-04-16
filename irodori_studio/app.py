@@ -13,6 +13,7 @@ from tkinter import (
     END,
     BooleanVar,
     Button,
+    Canvas,
     Checkbutton,
     Entry,
     filedialog,
@@ -48,6 +49,8 @@ BASE_CHECKPOINT_LABEL = CHECKPOINTS[0][0]
 TEXT_GUIDE_PATH = studio_root() / "docs" / "text-creation-guideline.md"
 PROFILE_PLACEHOLDER = "保存プロファイルを選ぶ…"
 HISTORY_PLACEHOLDER = "履歴を選ぶ…"
+
+LORA_TAB_TITLE = "LoRA 作成（学習）"
 
 # Windows 等で使えない文字を除いたファイル名用セグメント
 _INVALID_FILENAME = re.compile(r'[\\/:*?"<>|\x00-\x1f]')
@@ -170,8 +173,8 @@ class IrodoriStudioApp:
     def __init__(self, root: Tk) -> None:
         self.root = root
         root.title("Irodori-Studio")
-        root.minsize(720, 640)
-        root.geometry("900x720")
+        root.minsize(760, 680)
+        root.geometry("920x760")
 
         self.var_tts_dir = StringVar(value=str(default_irodori_tts_dir()))
         self.var_text = StringVar()
@@ -192,6 +195,21 @@ class IrodoriStudioApp:
         self.var_auto_filename = BooleanVar(value=True)
         self.var_body_preset_label = StringVar(value=PRESET_LABELS[0])
         self.status = StringVar(value="準備OK")
+
+        _tts0 = Path(self.var_tts_dir.get().strip() or default_irodori_tts_dir())
+        self.var_lora_config = StringVar(
+            value=str(_tts0 / "configs" / "train_500m_v2_lora.yaml")
+        )
+        self.var_lora_manifest = StringVar(
+            value=str(_tts0 / "data" / "train_manifest.jsonl")
+        )
+        self.var_lora_output = StringVar(
+            value=str(_tts0 / "outputs" / "irodori_tts_lora")
+        )
+        self.var_lora_init = StringVar(value="")
+        self.var_lora_resume = StringVar(value="")
+        self.var_lora_train_device = StringVar(value="cpu")
+        self._job_running = False
 
         self._build_menu(root)
         self._build_main_paned(root)
@@ -231,6 +249,10 @@ class IrodoriStudioApp:
             command=self._open_voicedesign_card,
         )
         help_menu.add_command(
+            label="LoRA 学習（公式 README）",
+            command=self._open_upstream_lora_docs,
+        )
+        help_menu.add_command(
             label="絵文字アノテーション一覧（HF）",
             command=self._open_emoji_annotations,
         )
@@ -244,11 +266,12 @@ class IrodoriStudioApp:
         lower = Frame(paned)
         paned.add(upper)
         paned.add(lower)
-        paned.paneconfig(upper, minsize=380)
-        paned.paneconfig(lower, minsize=120)
+        paned.paneconfig(upper, minsize=260)
+        paned.paneconfig(lower, minsize=140)
 
         self._build_form(upper)
         self._build_log(lower)
+        self._setup_form_canvas_mousewheel()
 
     def _build_log(self, parent: Frame) -> None:
         f = Frame(parent)
@@ -289,10 +312,100 @@ class IrodoriStudioApp:
         self.root.clipboard_append(content)
         self.status.set("ログをクリップボードにコピーしました")
 
+    @staticmethod
+    def _widget_is_descendant(widget: object, ancestor: object) -> bool:
+        """widget が ancestor の子孫（同一ウィジェット含む）か。"""
+        w = widget
+        while w is not None:
+            if w == ancestor:
+                return True
+            w = getattr(w, "master", None)
+        return False
+
+    def _setup_form_canvas_mousewheel(self) -> None:
+        """フォーム Canvas 上では子ウィジェット経由でもホイールで縦スクロールできるようにする。"""
+        canvas = getattr(self, "_form_canvas", None)
+        if canvas is None:
+            return
+        vsb = getattr(self, "_form_vsb", None)
+
+        def _pointer_in_widget(widget: object, x_root: int, y_root: int) -> bool:
+            try:
+                x, y = widget.winfo_rootx(), widget.winfo_rooty()
+                w, h = widget.winfo_width(), widget.winfo_height()
+            except TclError:
+                return False
+            return x <= x_root < x + w and y <= y_root < y + h
+
+        def _in_form_scroll_area(x_root: int, y_root: int) -> bool:
+            if _pointer_in_widget(canvas, x_root, y_root):
+                return True
+            if vsb is not None and _pointer_in_widget(vsb, x_root, y_root):
+                return True
+            return False
+
+        def _wheel_steps(event: object) -> int | None:
+            delta = getattr(event, "delta", 0)
+            num = getattr(event, "num", 0)
+            if delta:
+                steps = -int(round(delta / 120))
+                if steps == 0:
+                    steps = -1 if delta > 0 else 1
+                return steps
+            if num == 4:
+                return -1
+            if num == 5:
+                return 1
+            return None
+
+        def _on_form_wheel(event) -> str | None:
+            if not _in_form_scroll_area(event.x_root, event.y_root):
+                return None
+            try:
+                w = self.root.winfo_containing(event.x_root, event.y_root)
+            except TclError:
+                return None
+            if w is None:
+                return None
+            if hasattr(self, "txt_body") and self._widget_is_descendant(w, self.txt_body):
+                return None
+            if hasattr(self, "txt_log") and self._widget_is_descendant(w, self.txt_log):
+                return None
+            steps = _wheel_steps(event)
+            if not steps:
+                return None
+            canvas.yview_scroll(steps, "units")
+            return "break"
+
+        self.root.bind_all("<MouseWheel>", _on_form_wheel, add="+")
+        self.root.bind_all("<Button-4>", _on_form_wheel, add="+")
+        self.root.bind_all("<Button-5>", _on_form_wheel, add="+")
+
     def _build_form(self, root: Frame) -> None:
         pad = {"padx": 8, "pady": 3}
+        _wrap = 700
 
-        f0 = Frame(root)
+        canvas = Canvas(root, highlightthickness=0, borderwidth=0)
+        vsb = ttk.Scrollbar(root, orient="vertical", command=canvas.yview)
+        canvas.configure(yscrollcommand=vsb.set)
+        inner = Frame(canvas)
+        inner_win = canvas.create_window((0, 0), window=inner, anchor="nw")
+        self._form_canvas = canvas
+
+        def _sync_inner_scroll(_event=None) -> None:
+            canvas.configure(scrollregion=canvas.bbox("all"))
+
+        def _sync_canvas_width(event) -> None:
+            canvas.itemconfigure(inner_win, width=max(event.width - 4, 1))
+
+        inner.bind("<Configure>", _sync_inner_scroll)
+        canvas.bind("<Configure>", _sync_canvas_width)
+
+        self._form_vsb = vsb
+        canvas.pack(side="left", fill="both", expand=True)
+        vsb.pack(side="right", fill="y")
+
+        f0 = Frame(inner)
         f0.pack(fill="x", **pad)
         Label(f0, text="Irodori-TTS フォルダ").pack(side="left")
         Entry(f0, textvariable=self.var_tts_dir, width=72).pack(
@@ -300,7 +413,7 @@ class IrodoriStudioApp:
         )
         Button(f0, text="フォルダを選択…", command=self._browse_tts_dir).pack(side="left")
 
-        self._notebook = ttk.Notebook(root)
+        self._notebook = ttk.Notebook(inner)
         self._notebook.pack(fill="x", **pad)
 
         tab_ref = Frame(self._notebook, padx=6, pady=6)
@@ -315,7 +428,7 @@ class IrodoriStudioApp:
             text="特定の声に寄せたいときのモードです。参照 WAV を使うと声を複製し、オフにすると汎用読み上げになります。",
             fg="#555555",
             anchor="w",
-            wraplength=820,
+            wraplength=_wrap,
             justify="left",
         ).pack(fill="x", pady=(0, 6))
         f4 = Frame(tab_ref)
@@ -345,7 +458,7 @@ class IrodoriStudioApp:
             text="参照音声なしで、キャプションだけで話者・感情・話し方を決めます。本文の絵文字と併用できます。",
             fg="#555555",
             anchor="w",
-            wraplength=820,
+            wraplength=_wrap,
             justify="left",
         ).pack(fill="x", pady=(0, 4))
         fvd = Frame(tab_vd)
@@ -384,31 +497,121 @@ class IrodoriStudioApp:
             side="left", fill="x", expand=True, padx=4
         )
 
+        tab_lora = Frame(self._notebook, padx=6, pady=6)
+        self._notebook.add(tab_lora, text=LORA_TAB_TITLE)
+        Label(
+            tab_lora,
+            text="Irodori-TTS の train.py で PEFT LoRA を学習します。事前に manifest（JSONL）と "
+            "DACVAE 前処理が必要です（公式 README の Dataset / prepare_manifest を参照）。",
+            fg="#555555",
+            anchor="w",
+            wraplength=_wrap,
+            justify="left",
+        ).pack(fill="x", pady=(0, 6))
+        row_lc = Frame(tab_lora)
+        row_lc.pack(fill="x", pady=(0, 2))
+        Label(row_lc, text="設定プリセット").pack(side="left")
+        _lora_yaml_labels = (
+            "train_500m_v2_lora.yaml（基本モデル LoRA）",
+            "train_500m_v2_voice_design_lora.yaml（VoiceDesign LoRA）",
+        )
+        self._combo_lora_yaml = ttk.Combobox(
+            row_lc,
+            state="readonly",
+            width=42,
+            values=_lora_yaml_labels,
+        )
+        self._combo_lora_yaml.current(0)
+        self._combo_lora_yaml.pack(side="left", padx=4)
+        Button(row_lc, text="パスに反映", command=self._apply_lora_yaml_preset).pack(
+            side="left"
+        )
+
+        def row_file(parent: Frame, label: str, var: StringVar, browse_cmd: object) -> None:
+            r = Frame(parent)
+            r.pack(fill="x", pady=2)
+            Label(r, text=label, width=18, anchor="w").pack(side="left")
+            Entry(r, textvariable=var, width=62).pack(
+                side="left", fill="x", expand=True, padx=4
+            )
+            Button(r, text="参照…", command=browse_cmd).pack(side="left")
+
+        row_file(tab_lora, "学習 YAML", self.var_lora_config, self._browse_lora_config)
+        row_file(tab_lora, "manifest（JSONL）", self.var_lora_manifest, self._browse_lora_manifest)
+        row_file(tab_lora, "出力フォルダ", self.var_lora_output, self._browse_lora_output)
+        row_file(tab_lora, "初期重み（.safetensors）", self.var_lora_init, self._browse_lora_init)
+        r_res = Frame(tab_lora)
+        r_res.pack(fill="x", pady=2)
+        Label(r_res, text="再開（LoRA フォルダ）", width=18, anchor="w").pack(side="left")
+        Entry(r_res, textvariable=self.var_lora_resume, width=62).pack(
+            side="left", fill="x", expand=True, padx=4
+        )
+        Button(r_res, text="参照…", command=self._browse_lora_resume).pack(side="left")
+        Label(
+            tab_lora,
+            text="新規学習: 初期重みに公式の .safetensors を指定。中断からの再開のみなら「再開」にアダプタフォルダを指定（任意で初期重みも上書き可）。",
+            fg="#555555",
+            font=("", 8),
+            wraplength=_wrap,
+            justify="left",
+        ).pack(anchor="w", pady=(0, 4))
+        row_dev = Frame(tab_lora)
+        row_dev.pack(fill="x", pady=(0, 6))
+        Label(row_dev, text="学習デバイス").pack(side="left")
+        self._lora_device_combo = ttk.Combobox(
+            row_dev,
+            textvariable=self.var_lora_train_device,
+            values=_device_choices(),
+            width=8,
+            state="readonly",
+        )
+        self._lora_device_combo.pack(side="left", padx=8)
+        row_btns = Frame(tab_lora)
+        row_btns.pack(fill="x", pady=(4, 0))
+        self.btn_lora_copy = Button(
+            row_btns,
+            text="コマンドをコピー",
+            command=self._copy_lora_command,
+        )
+        self.btn_lora_copy.pack(side="left", padx=(0, 8))
+        self.btn_lora_run = Button(
+            row_btns,
+            text="学習を開始（ログに出力）",
+            command=self._run_lora_training,
+        )
+        self.btn_lora_run.pack(side="left")
+
         self._notebook.bind("<<NotebookTabChanged>>", self._on_notebook_tab_changed)
         self._on_notebook_tab_changed()
         self._combo_vd_char.bind("<<ComboboxSelected>>", self._on_voice_character_selected)
 
-        fp = Frame(root)
+        fp = Frame(inner)
         fp.pack(fill="x", **pad)
-        Label(fp, text="保存プロファイル").pack(side="left")
+        fp_top = Frame(fp)
+        fp_top.pack(fill="x")
+        Label(fp_top, text="保存プロファイル").pack(side="left")
         self._combo_preset = ttk.Combobox(
-            fp,
+            fp_top,
             textvariable=self.var_preset_pick,
             values=self._preset_names(),
             width=28,
             state="readonly",
         )
         self._combo_preset.pack(side="left", padx=4)
-        self.btn_apply_profile = Button(fp, text="読み込む", command=self._apply_preset)
+        self.btn_apply_profile = Button(fp_top, text="読み込む", command=self._apply_preset)
         self.btn_apply_profile.pack(side="left")
-        Button(fp, text="一覧更新", command=self._refresh_preset_combo).pack(side="left", padx=4)
+        Button(fp_top, text="一覧更新", command=self._refresh_preset_combo).pack(
+            side="left", padx=4
+        )
         Label(
             fp,
             text="自分で保存した設定・本文・キャプションをまとめて呼び出します。",
             fg="#555555",
-        ).pack(side="left", padx=6)
+            wraplength=_wrap,
+            justify="left",
+        ).pack(anchor="w", pady=(2, 0))
 
-        fh = Frame(root)
+        fh = Frame(inner)
         fh.pack(fill="x", **pad)
         Label(fh, text="履歴").pack(side="left")
         self._combo_history = ttk.Combobox(
@@ -425,8 +628,8 @@ class IrodoriStudioApp:
         self._combo_history.bind("<<ComboboxSelected>>", self._refresh_action_buttons)
         self._refresh_action_buttons()
 
-        f2 = Frame(root)
-        f2.pack(fill="both", expand=True, **pad)
+        f2 = Frame(inner)
+        f2.pack(fill="x", **pad)
         row_t = Frame(f2)
         row_t.pack(fill="x")
         Label(row_t, text="読み上げテキスト（絵文字で感情表現可）").pack(side="left")
@@ -438,9 +641,11 @@ class IrodoriStudioApp:
         )
         row_tp = Frame(f2)
         row_tp.pack(fill="x", pady=(0, 2))
-        Label(row_tp, text="台本サンプル:").pack(side="left")
+        row_tp_top = Frame(row_tp)
+        row_tp_top.pack(fill="x")
+        Label(row_tp_top, text="台本サンプル:").pack(side="left")
         self._combo_body_preset = ttk.Combobox(
-            row_tp,
+            row_tp_top,
             textvariable=self.var_body_preset_label,
             values=PRESET_LABELS,
             state="readonly",
@@ -448,7 +653,7 @@ class IrodoriStudioApp:
         )
         self._combo_body_preset.pack(side="left", padx=4)
         Button(
-            row_tp,
+            row_tp_top,
             text="このサンプルに差し替え",
             command=self._apply_selected_body_preset,
         ).pack(side="left", padx=2)
@@ -456,19 +661,21 @@ class IrodoriStudioApp:
             row_tp,
             text="最初から入っている台本サンプルです。保存プロファイルとは別物です。",
             fg="#555555",
-        ).pack(side="left", padx=6)
-        self.txt_body = scrolledtext.ScrolledText(f2, height=9, wrap="word")
-        self.txt_body.pack(fill="both", expand=True, pady=(2, 0))
+            wraplength=_wrap,
+            justify="left",
+        ).pack(anchor="w", pady=(2, 0))
+        self.txt_body = scrolledtext.ScrolledText(f2, height=7, wrap="word")
+        self.txt_body.pack(fill="x", pady=(2, 0))
         self.txt_body.insert("1.0", DEFAULT_SAMPLE_TEXT)
 
-        f_emoji = Frame(root)
+        f_emoji = Frame(inner)
         f_emoji.pack(fill="x", **pad)
         Label(f_emoji, text="絵文字:").pack(side="left")
         for em in EMOJI_PRESETS[:8]:
             Button(f_emoji, text=em, width=3, command=lambda e=em: self._insert_emoji(e)).pack(
                 side="left", padx=1
             )
-        f_emoji2 = Frame(root)
+        f_emoji2 = Frame(inner)
         f_emoji2.pack(fill="x", **pad)
         Label(f_emoji2, text="").pack(side="left", padx=32)
         for em in EMOJI_PRESETS[8:]:
@@ -476,7 +683,7 @@ class IrodoriStudioApp:
                 side="left", padx=1
             )
 
-        f5 = Frame(root)
+        f5 = Frame(inner)
         f5.pack(fill="x", **pad)
         Checkbutton(
             f5,
@@ -491,16 +698,18 @@ class IrodoriStudioApp:
         Button(f5, text="フォルダ", command=self._open_output_folder).pack(side="left", padx=2)
         Button(f5, text="パスコピー", command=self._copy_output_path).pack(side="left", padx=2)
         Button(f5, text="再生", command=self._play_output_wav).pack(side="left", padx=2)
-        f5h = Frame(root)
+        f5h = Frame(inner)
         f5h.pack(fill="x", padx=8, pady=(0, 2))
         Label(
             f5h,
             text="自動ON: outputs/generated に「声の種類_セリフ先頭_連番.wav」で保存（探しやすい）",
             fg="#555555",
             font=("", 8),
+            wraplength=_wrap,
+            justify="left",
         ).pack(anchor="w")
 
-        f6 = Frame(root)
+        f6 = Frame(inner)
         f6.pack(fill="x", **pad)
         Label(f6, text="デバイス").pack(side="left")
         self._device_combo = ttk.Combobox(
@@ -527,6 +736,8 @@ class IrodoriStudioApp:
             idx = self._notebook.index(self._notebook.select())
         except TclError:
             return BASE_CHECKPOINT_LABEL
+        if idx == 2:
+            return BASE_CHECKPOINT_LABEL
         if idx == 1:
             return vd_presets.VOICEDESIGN_CHECKPOINT_LABEL
         return BASE_CHECKPOINT_LABEL
@@ -536,10 +747,18 @@ class IrodoriStudioApp:
             title = self._notebook.tab(self._notebook.select(), "text")
         except TclError:
             return
-        if "VoiceDesign" in title:
+        if title == LORA_TAB_TITLE:
+            self.status.set(f"モード: {title}（推論は他タブへ／学習は下のボタン）")
+            if not self._job_running:
+                self.btn_gen.configure(state="disabled")
+        elif "VoiceDesign" in title:
             self.status.set(f"モード: {title}（キャプション必須）")
+            if not self._job_running:
+                self.btn_gen.configure(state="normal")
         else:
             self.status.set(f"モード: {title}")
+            if not self._job_running:
+                self.btn_gen.configure(state="normal")
 
     def _refresh_action_buttons(self, _event: object = None) -> None:
         profile_ready = self.var_preset_pick.get().strip() not in {"", PROFILE_PLACEHOLDER}
@@ -558,6 +777,8 @@ class IrodoriStudioApp:
             mode_idx = self._notebook.index(self._notebook.select())
         except TclError:
             mode_idx = 0
+        if mode_idx == 2:
+            return "LORA"
         if mode_idx == 0:
             return "NOREF" if self.var_no_ref.get() else "REF"
         char = self.var_voice_design_char.get().strip()
@@ -864,6 +1085,243 @@ class IrodoriStudioApp:
         p = filedialog.askdirectory(title="Irodori-TTS フォルダを選択")
         if p:
             self.var_tts_dir.set(p)
+            self._sync_lora_paths_from_tts()
+
+    def _sync_lora_paths_from_tts(self) -> None:
+        """TTS ルート変更時に LoRA 用の既定パスを更新（空欄のときのみ補完）。"""
+        tts = Path(self.var_tts_dir.get().strip())
+        if not tts.is_dir():
+            return
+        cfg = tts / "configs" / "train_500m_v2_lora.yaml"
+        if cfg.is_file():
+            cur = self.var_lora_config.get().strip()
+            if not cur or not Path(cur).is_file():
+                self.var_lora_config.set(str(cfg))
+        man = tts / "data" / "train_manifest.jsonl"
+        if man.is_file():
+            cur_m = self.var_lora_manifest.get().strip()
+            if not cur_m or not Path(cur_m).is_file():
+                self.var_lora_manifest.set(str(man))
+        out = tts / "outputs" / "irodori_tts_lora"
+        if not self.var_lora_output.get().strip():
+            self.var_lora_output.set(str(out))
+
+    def _apply_lora_yaml_preset(self) -> None:
+        tts = Path(self.var_tts_dir.get().strip())
+        choice = self._combo_lora_yaml.get()
+        if "voice_design" in choice.lower():
+            name = "train_500m_v2_voice_design_lora.yaml"
+        else:
+            name = "train_500m_v2_lora.yaml"
+        self.var_lora_config.set(str(tts / "configs" / name))
+
+    def _browse_lora_config(self) -> None:
+        p = filedialog.askopenfilename(
+            title="学習用 YAML",
+            filetypes=[("YAML", "*.yaml;*.yml"), ("すべて", "*.*")],
+        )
+        if p:
+            self.var_lora_config.set(p)
+
+    def _browse_lora_manifest(self) -> None:
+        p = filedialog.askopenfilename(
+            title="manifest（JSONL）",
+            filetypes=[("JSONL", "*.jsonl"), ("すべて", "*.*")],
+        )
+        if p:
+            self.var_lora_manifest.set(p)
+
+    def _browse_lora_output(self) -> None:
+        p = filedialog.askdirectory(title="学習の出力フォルダ")
+        if p:
+            self.var_lora_output.set(p)
+
+    def _browse_lora_init(self) -> None:
+        p = filedialog.askopenfilename(
+            title="初期チェックポイント（.safetensors）",
+            filetypes=[("Safetensors", "*.safetensors"), ("すべて", "*.*")],
+        )
+        if p:
+            self.var_lora_init.set(p)
+
+    def _browse_lora_resume(self) -> None:
+        p = filedialog.askdirectory(title="再開する LoRA アダプタのフォルダ")
+        if p:
+            self.var_lora_resume.set(p)
+
+    def _build_lora_train_command(self) -> tuple[list[str], Path] | tuple[None, None]:
+        """検証済みの train コマンドと cwd を返す。失敗時は (None, None)。"""
+        tts = Path(self.var_tts_dir.get().strip())
+        train_py = tts / "train.py"
+        if not train_py.is_file():
+            messagebox.showerror(
+                "エラー",
+                f"train.py が見つかりません。\n{train_py}\n\n"
+                "Irodori-TTS のルートを「Irodori-TTS フォルダ」に指定してください。",
+            )
+            return None, None
+
+        cfg_path = Path(self.var_lora_config.get().strip())
+        if not cfg_path.is_file():
+            messagebox.showerror("エラー", f"学習 YAML が見つかりません:\n{cfg_path}")
+            return None, None
+
+        manifest = Path(self.var_lora_manifest.get().strip())
+        if not manifest.is_file():
+            messagebox.showerror(
+                "エラー",
+                f"manifest が見つかりません:\n{manifest}\n\n"
+                "prepare_manifest.py で JSONL を作成してください（公式 README）。",
+            )
+            return None, None
+
+        out_dir = self.var_lora_output.get().strip()
+        if not out_dir:
+            messagebox.showerror("エラー", "出力フォルダを指定してください。")
+            return None, None
+
+        init_s = self.var_lora_init.get().strip()
+        resume_s = self.var_lora_resume.get().strip()
+        if resume_s:
+            rp = Path(resume_s)
+            if not rp.is_dir():
+                messagebox.showerror("エラー", f"再開パスはフォルダである必要があります:\n{rp}")
+                return None, None
+        if not resume_s and not init_s:
+            messagebox.showerror(
+                "エラー",
+                "「初期重み（.safetensors）」を指定するか、"
+                "「再開」に LoRA アダプタフォルダを指定してください。",
+            )
+            return None, None
+        if init_s:
+            ip = Path(init_s)
+            if not ip.is_file():
+                messagebox.showerror("エラー", f"初期重みが見つかりません:\n{ip}")
+                return None, None
+
+        uv_bin = _which_uv()
+        if not uv_bin:
+            messagebox.showerror(
+                "エラー",
+                "uv が見つかりません。\n"
+                "PowerShell: irm https://astral.sh/uv/install.ps1 | iex",
+            )
+            return None, None
+
+        dev = self.var_lora_train_device.get().strip()
+        if dev == "cuda" and not torch_cuda_available(tts, uv_bin):
+            messagebox.showerror(
+                "CUDA が使えません",
+                "学習デバイスに cuda を選んでいますが、この環境では "
+                "CUDA が利用できません。cpu に変更するか、GPU 環境を確認してください。",
+            )
+            return None, None
+
+        cmd: list[str] = [
+            uv_bin,
+            "run",
+            "python",
+            "train.py",
+            "--config",
+            str(cfg_path),
+            "--manifest",
+            str(manifest),
+            "--output-dir",
+            out_dir,
+            "--device",
+            dev,
+        ]
+        if resume_s:
+            cmd.extend(["--resume", resume_s])
+        if init_s:
+            cmd.extend(["--init-checkpoint", init_s])
+
+        return cmd, tts
+
+    def _copy_lora_command(self) -> None:
+        if self._job_running:
+            return
+        cmd_t = self._build_lora_train_command()
+        if cmd_t[0] is None:
+            return
+        cmd, _cwd = cmd_t
+        line = subprocess.list2cmdline(cmd)
+        self.root.clipboard_clear()
+        self.root.clipboard_append(line)
+        self.status.set("学習コマンドをクリップボードにコピーしました")
+
+    def _run_lora_training(self) -> None:
+        if self._job_running:
+            return
+        cmd_t = self._build_lora_train_command()
+        if cmd_t[0] is None:
+            return
+        cmd, cwd = cmd_t
+        self._job_running = True
+        self.btn_lora_run.configure(state="disabled")
+        self.btn_lora_copy.configure(state="disabled")
+        self.btn_gen.configure(state="disabled")
+        self.status.set("学習中…（ログを確認。中断はコンソール相当）")
+        self._log_append("\n----------\n")
+        self._log_append("LoRA 学習: " + subprocess.list2cmdline(cmd[:10]) + " ...\n")
+
+        def work() -> None:
+            try:
+                proc = subprocess.Popen(
+                    cmd,
+                    cwd=str(cwd),
+                    env=_env_with_uv_on_path(),
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    text=True,
+                    encoding="utf-8",
+                    errors="replace",
+                    bufsize=1,
+                )
+                if proc.stdout is None:
+                    self.root.after(
+                        0,
+                        lambda: self._lora_train_finished(
+                            -1,
+                            "stdout を開けませんでした。",
+                        ),
+                    )
+                    return
+                for line in proc.stdout:
+                    self.root.after(0, lambda l=line: self._log_append(l))
+                code = proc.wait()
+                self.root.after(0, lambda: self._lora_train_finished(code, None))
+            except OSError as e:
+                self.root.after(0, lambda: self._lora_train_finished(-1, str(e)))
+
+        threading.Thread(target=work, daemon=True).start()
+
+    def _lora_train_finished(self, code: int, err: str | None) -> None:
+        self._job_running = False
+        self.btn_lora_run.configure(state="normal")
+        self.btn_lora_copy.configure(state="normal")
+        self._on_notebook_tab_changed()
+        if err:
+            self.status.set("学習エラー")
+            self._log_append(err + "\n")
+            messagebox.showerror("LoRA 学習", err)
+            return
+        if code == 0:
+            self.status.set("学習プロセスが終了しました（成功）")
+            self._log_append("\n（プロセス終了コード 0）\n")
+        else:
+            self.status.set(f"学習終了（コード {code}）")
+            self._log_append(f"\n（プロセス終了コード {code}）\n")
+            messagebox.showwarning(
+                "LoRA 学習",
+                f"終了コード {code} です。ログを確認してください。",
+            )
+
+    def _open_upstream_lora_docs(self) -> None:
+        webbrowser.open(
+            "https://github.com/Aratako/Irodori-TTS/blob/main/README.md#fine-tuning-from-released-weights"
+        )
 
     def _browse_ref_wav(self) -> None:
         p = filedialog.askopenfilename(
@@ -884,6 +1342,19 @@ class IrodoriStudioApp:
             self.var_output_wav.set(p)
 
     def _validate(self) -> tuple[list[str], Path] | None:
+        try:
+            mode_idx = self._notebook.index(self._notebook.select())
+        except TclError:
+            mode_idx = 0
+        if mode_idx == 2:
+            messagebox.showinfo(
+                "モード",
+                "LoRA 作成タブでは音声は生成できません。\n"
+                "「参照音声」または「VoiceDesign」タブに切り替えてください。\n\n"
+                "学習を始める場合は、同タブの「学習を開始」を使ってください。",
+            )
+            return None
+
         tts = Path(self.var_tts_dir.get().strip())
         infer = tts / "infer.py"
         if not infer.is_file():
@@ -931,11 +1402,6 @@ class IrodoriStudioApp:
         except OSError as e:
             messagebox.showerror("エラー", f"出力フォルダを作成できません: {e}")
             return None
-
-        try:
-            mode_idx = self._notebook.index(self._notebook.select())
-        except TclError:
-            mode_idx = 0
 
         if mode_idx == 0:
             no_ref = self.var_no_ref.get()
@@ -1025,6 +1491,9 @@ class IrodoriStudioApp:
         return cmd, tts
 
     def _on_generate(self) -> None:
+        if self._job_running:
+            messagebox.showinfo("実行中", "LoRA 学習が進行中です。完了を待つか、別ウィンドウで操作してください。")
+            return
         validated = self._validate()
         if not validated:
             return
@@ -1109,7 +1578,8 @@ class IrodoriStudioApp:
             "ローカルの Irodori-TTS（infer.py）を呼び出して音声を生成します。\n\n"
             "【タブ】\n"
             "・参照音声 … 基本モデル＋参照 WAV（または参照なし）\n"
-            "・VoiceDesign … キャプションで話者指定（キャラプリセット利用可）\n\n"
+            "・VoiceDesign … キャプションで話者指定（キャラプリセット利用可）\n"
+            "・LoRA 作成 … train.py で学習（manifest 準備が必要。ヘルプに公式手順）\n\n"
             "・保存プロファイルは、自分で保存した設定と本文の呼び出し用です。\n"
             "・台本サンプルは、最初から入っている例文の差し替え用です。\n"
             "・起動時は先頭プリセットが入っています。\n"
@@ -1128,6 +1598,7 @@ def run_app() -> None:
     except Exception:
         pass
     app = IrodoriStudioApp(root)
+    app._sync_lora_paths_from_tts()
     app._refresh_preset_combo()
     app._refresh_history_combo()
     root.mainloop()
