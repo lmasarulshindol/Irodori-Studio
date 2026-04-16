@@ -170,6 +170,29 @@ def _device_choices() -> tuple[str, ...]:
     return ("cpu", "cuda")
 
 
+def _ffmpeg_bin() -> str | None:
+    """ffmpeg のパスを返す。見つからなければ None。"""
+    import shutil
+    return shutil.which("ffmpeg")
+
+
+def _convert_wav_to_mp3(wav_path: Path, *, bitrate: str = "192k") -> Path | None:
+    """WAV → MP3 変換。同名の .mp3 を同じフォルダに生成して返す。"""
+    ffmpeg = _ffmpeg_bin()
+    if ffmpeg is None:
+        return None
+    mp3 = wav_path.with_suffix(".mp3")
+    try:
+        subprocess.run(
+            [ffmpeg, "-y", "-i", str(wav_path), "-b:a", bitrate, str(mp3)],
+            capture_output=True,
+            timeout=120,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    return mp3 if mp3.is_file() else None
+
+
 class IrodoriStudioApp:
     def __init__(self, root: Tk) -> None:
         self.root = root
@@ -194,6 +217,7 @@ class IrodoriStudioApp:
         self.var_history_pick = StringVar(value=HISTORY_PLACEHOLDER)
         self.var_voice_design_char = StringVar(value=vd_presets.NONE_LABEL)
         self.var_auto_filename = BooleanVar(value=True)
+        self.var_mp3_convert = BooleanVar(value=_ffmpeg_bin() is not None)
         self.var_body_preset_label = StringVar(value=PRESET_LABELS[0])
         self.status = StringVar(value="準備OK")
 
@@ -708,12 +732,20 @@ class IrodoriStudioApp:
         Button(f5, text="フォルダ", command=self._open_output_folder).pack(side="left", padx=2)
         Button(f5, text="パスコピー", command=self._copy_output_path).pack(side="left", padx=2)
         Button(f5, text="再生", command=self._play_output_wav).pack(side="left", padx=2)
+        Checkbutton(
+            f5,
+            text="MP3 も作成",
+            variable=self.var_mp3_convert,
+        ).pack(side="left", padx=(8, 0))
         f5h = Frame(self._infer_only_frame)
         f5h.pack(fill="x", pady=(0, 2))
+        _has_ffmpeg = _ffmpeg_bin() is not None
         Label(
             f5h,
-            text="自動ON: outputs/generated に「声の種類_セリフ先頭_連番.wav」で保存（探しやすい）",
-            fg="#555555",
+            text="自動ON: outputs/generated に「声の種類_セリフ先頭_連番.wav」で保存。"
+            "MP3: 同名の .mp3 を隣に生成（要 ffmpeg）"
+            + ("" if _has_ffmpeg else "  ⚠ ffmpeg 未検出"),
+            fg="#555555" if _has_ffmpeg else "#cc6600",
             font=("", 8),
             wraplength=_wrap,
             justify="left",
@@ -1596,6 +1628,18 @@ class IrodoriStudioApp:
         )
         self._refresh_history_combo()
 
+        mp3_msg = ""
+        if self.var_mp3_convert.get() and out:
+            wav_p = Path(out)
+            if wav_p.is_file():
+                mp3 = _convert_wav_to_mp3(wav_p)
+                if mp3 is not None:
+                    mp3_msg = f"\nMP3: {mp3}"
+                    self._log_append(f"MP3 変換: {mp3}\n")
+                else:
+                    mp3_msg = "\n(MP3 変換失敗 — ffmpeg を確認してください)"
+                    self._log_append("MP3 変換に失敗しました。ffmpeg がインストールされているか確認してください。\n")
+
         try:
             import winsound
 
@@ -1604,7 +1648,7 @@ class IrodoriStudioApp:
             pass
 
         if self.var_notify_done.get():
-            messagebox.showinfo("完了", f"保存しました:\n{out}")
+            messagebox.showinfo("完了", f"保存しました:\n{out}{mp3_msg}")
 
     def _done_err(self, err: str) -> None:
         self.btn_gen.configure(state="normal")
