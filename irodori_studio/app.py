@@ -1051,6 +1051,12 @@ class IrodoriStudioApp:
             messagebox.showerror("エラー", f"本文プリセットが見つかりません: {label}")
             return
         cur = self.txt_body.get("1.0", END).strip()
+        if not text:
+            if cur and messagebox.askyesno("本文クリア", "本文を空にしますか？"):
+                self.txt_body.delete("1.0", END)
+                self.var_body_preset_label.set(label)
+                self.status.set("本文をクリアしました")
+            return
         if cur:
             if not messagebox.askyesno(
                 "本文プリセット",
@@ -1066,8 +1072,11 @@ class IrodoriStudioApp:
         self._replace_body_with_preset(self.var_body_preset_label.get().strip())
 
     def _insert_sample_text(self) -> None:
-        """メニュー・サンプルボタン: 一覧の先頭サンプル。"""
-        self._replace_body_with_preset(PRESET_LABELS[0])
+        """メニュー・サンプルボタン: 先頭のサンプル本文（「指定なし」は飛ばす）。"""
+        for label in PRESET_LABELS:
+            if body_text_for_label(label):
+                self._replace_body_with_preset(label)
+                return
 
     def _paste_clipboard(self) -> None:
         try:

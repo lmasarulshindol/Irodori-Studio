@@ -5,6 +5,10 @@ from __future__ import annotations
 # (表示名, 本文)
 BODY_PRESETS: list[tuple[str, str]] = [
     (
+        "（指定なし）",
+        "",
+    ),
+    (
         "会議・依頼（デモ風）",
         "明日の午後に予定していた会議だけど、急遽来週に延期になったみたい。"
         "悪いんだけど、資料の準備は一旦ストップしておいてくれるかな。\n"
@@ -50,8 +54,8 @@ BODY_PRESETS: list[tuple[str, str]] = [
 
 PRESET_LABELS = [p[0] for p in BODY_PRESETS]
 
-# 起動時の既定（先頭と同じ）
-DEFAULT_SAMPLE_TEXT = BODY_PRESETS[0][1]
+# 起動時の既定（本文がある最初のプリセット）
+DEFAULT_SAMPLE_TEXT = next((t for _, t in BODY_PRESETS if t), "")
 
 
 def body_text_for_label(label: str) -> str | None:
