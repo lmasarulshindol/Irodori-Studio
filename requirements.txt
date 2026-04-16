@@ -1,2 +1,5 @@
 # GUI は Python 標準の tkinter のみ使用。
 # 音声合成エンジンは ../Irodori-TTS で uv sync 済みであること。
+
+# 開発・テスト（任意）
+pytest>=8

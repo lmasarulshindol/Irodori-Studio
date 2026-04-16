@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import json
 import os
 import re
 import subprocess
 import sys
+import tempfile
 import threading
 import webbrowser
 from pathlib import Path
@@ -26,11 +28,13 @@ from tkinter import (
     StringVar,
     TclError,
     Tk,
+    Toplevel,
     ttk,
 )
 from tkinter.simpledialog import askstring
 
 from irodori_studio.paths import default_irodori_tts_dir, studio_root
+from irodori_studio import settings as studio_settings
 from irodori_studio import storage
 from irodori_studio import voice_design_presets as vd_presets
 from irodori_studio.text_presets import (
@@ -38,6 +42,7 @@ from irodori_studio.text_presets import (
     PRESET_LABELS,
     body_text_for_label,
 )
+from irodori_studio.wav_mp3 import convert_wav_to_mp3
 
 CHECKPOINTS = [
     ("Irodori-TTS-500M-v2（基本）", "Aratako/Irodori-TTS-500M-v2"),
@@ -170,29 +175,6 @@ def _device_choices() -> tuple[str, ...]:
     return ("cpu", "cuda")
 
 
-def _ffmpeg_bin() -> str | None:
-    """ffmpeg のパスを返す。見つからなければ None。"""
-    import shutil
-    return shutil.which("ffmpeg")
-
-
-def _convert_wav_to_mp3(wav_path: Path, *, bitrate: str = "192k") -> Path | None:
-    """WAV → MP3 変換。同名の .mp3 を同じフォルダに生成して返す。"""
-    ffmpeg = _ffmpeg_bin()
-    if ffmpeg is None:
-        return None
-    mp3 = wav_path.with_suffix(".mp3")
-    try:
-        subprocess.run(
-            [ffmpeg, "-y", "-i", str(wav_path), "-b:a", bitrate, str(mp3)],
-            capture_output=True,
-            timeout=120,
-        )
-    except (OSError, subprocess.TimeoutExpired):
-        return None
-    return mp3 if mp3.is_file() else None
-
-
 class IrodoriStudioApp:
     def __init__(self, root: Tk) -> None:
         self.root = root
@@ -217,9 +199,16 @@ class IrodoriStudioApp:
         self.var_history_pick = StringVar(value=HISTORY_PLACEHOLDER)
         self.var_voice_design_char = StringVar(value=vd_presets.NONE_LABEL)
         self.var_auto_filename = BooleanVar(value=True)
-        self.var_mp3_convert = BooleanVar(value=_ffmpeg_bin() is not None)
+        self._studio_settings = studio_settings.load()
+        self.var_mp3_convert = BooleanVar(
+            value=studio_settings.resolve_ffmpeg_path() is not None
+        )
+        self.var_mp3_bitrate = StringVar(value=str(self._studio_settings.get("mp3_bitrate", "192k")))
+        self.var_infer_checkpoint = StringVar(value="")
         self.var_body_preset_label = StringVar(value=PRESET_LABELS[0])
         self.status = StringVar(value="準備OK")
+        self._last_output_wav: str | None = None
+        self._last_output_mp3: str | None = None
 
         _tts0 = Path(self.var_tts_dir.get().strip() or default_irodori_tts_dir())
         self.var_lora_config = StringVar(
@@ -245,6 +234,11 @@ class IrodoriStudioApp:
 
         file_menu = Menu(menubar, tearoff=0)
         menubar.add_cascade(label="ファイル", menu=file_menu)
+        file_menu.add_command(
+            label="WAV→MP3 一括変換（別ウィンドウ）…",
+            command=self._open_wav_mp3_batch_tool,
+        )
+        file_menu.add_separator()
         file_menu.add_command(label="台本テキストを開く…", command=self._load_text_file)
         file_menu.add_command(label="クリップボードを貼り付け", command=self._paste_clipboard)
         file_menu.add_command(
@@ -252,7 +246,18 @@ class IrodoriStudioApp:
             command=self._insert_sample_text,
         )
         file_menu.add_separator()
+        file_menu.add_command(
+            label="連続生成（本文を行ごと）…",
+            command=self._run_batch_generate,
+        )
+        file_menu.add_command(
+            label="参照 WAV を切り出し…",
+            command=self._trim_ref_wav_dialog,
+        )
+        file_menu.add_separator()
         file_menu.add_command(label="履歴をクリア", command=self._clear_history_storage)
+        file_menu.add_separator()
+        file_menu.add_command(label="アプリ設定…", command=self._open_app_settings)
         file_menu.add_separator()
         file_menu.add_command(label="アプリを再起動", command=self._restart_application)
 
@@ -326,6 +331,19 @@ class IrodoriStudioApp:
     def _log_append(self, text: str) -> None:
         self.txt_log.configure(state="normal")
         self.txt_log.insert(END, text)
+        try:
+            max_lines = int(self._studio_settings.get("log_max_lines", 3000))
+            max_lines = max(100, min(50_000, max_lines))
+        except (TypeError, ValueError):
+            max_lines = 3000
+        while True:
+            try:
+                li = int(self.txt_log.index("end-1c").split(".")[0])
+            except TclError:
+                break
+            if li <= max_lines:
+                break
+            self.txt_log.delete("1.0", "2.0")
         self.txt_log.see(END)
         self.txt_log.configure(state="disabled")
 
@@ -436,12 +454,31 @@ class IrodoriStudioApp:
         vsb.pack(side="right", fill="y")
 
         f0 = Frame(inner)
+        self._f0_frame = f0
         f0.pack(fill="x", **pad)
         Label(f0, text="Irodori-TTS フォルダ").pack(side="left")
         Entry(f0, textvariable=self.var_tts_dir, width=72).pack(
             side="left", fill="x", expand=True, padx=4
         )
         Button(f0, text="フォルダを選択…", command=self._browse_tts_dir).pack(side="left")
+
+        self._infer_ck_frame = Frame(inner)
+        self._infer_ck_frame.pack(fill="x", **pad, after=f0)
+        f_ck = Frame(self._infer_ck_frame)
+        f_ck.pack(fill="x")
+        Label(f_ck, text="推論チェックポイント（任意）").pack(side="left")
+        Entry(f_ck, textvariable=self.var_infer_checkpoint, width=58).pack(
+            side="left", fill="x", expand=True, padx=4
+        )
+        Button(f_ck, text="参照…", command=self._browse_infer_checkpoint).pack(side="left")
+        Label(
+            self._infer_ck_frame,
+            text="空＝Hugging Face の既定モデル。convert 済みの .safetensors（学習後マージなど）を指定すると --checkpoint で推論します。",
+            fg="#555555",
+            font=("", 8),
+            wraplength=_wrap,
+            justify="left",
+        ).pack(anchor="w", pady=(2, 0))
 
         self._notebook = ttk.Notebook(inner)
         self._notebook.pack(fill="x", **pad)
@@ -732,18 +769,30 @@ class IrodoriStudioApp:
         Button(f5, text="フォルダ", command=self._open_output_folder).pack(side="left", padx=2)
         Button(f5, text="パスコピー", command=self._copy_output_path).pack(side="left", padx=2)
         Button(f5, text="再生", command=self._play_output_wav).pack(side="left", padx=2)
+        f5_mp3 = Frame(self._infer_only_frame)
+        f5_mp3.pack(fill="x", pady=(0, 2))
         Checkbutton(
-            f5,
+            f5_mp3,
             text="MP3 も作成",
             variable=self.var_mp3_convert,
-        ).pack(side="left", padx=(8, 0))
+        ).pack(side="left")
+        Label(f5_mp3, text="ビットレート").pack(side="left", padx=(8, 0))
+        self._combo_mp3_bitrate = ttk.Combobox(
+            f5_mp3,
+            textvariable=self.var_mp3_bitrate,
+            values=studio_settings.MP3_BITRATES,
+            width=6,
+            state="readonly",
+        )
+        self._combo_mp3_bitrate.pack(side="left", padx=2)
+        self._combo_mp3_bitrate.bind("<<ComboboxSelected>>", self._persist_mp3_bitrate)
         f5h = Frame(self._infer_only_frame)
         f5h.pack(fill="x", pady=(0, 2))
-        _has_ffmpeg = _ffmpeg_bin() is not None
+        _has_ffmpeg = studio_settings.resolve_ffmpeg_path() is not None
         Label(
             f5h,
-            text="自動ON: outputs/generated に「声の種類_セリフ先頭_連番.wav」で保存。"
-            "MP3: 同名の .mp3 を隣に生成（要 ffmpeg）"
+            text="自動ON: outputs/generated に「声の種類_セリフ先頭_連番.wav」。"
+            "MP3 は同名 .mp3（要 ffmpeg。未検出時はヘルプ→アプリ設定でパス指定）"
             + ("" if _has_ffmpeg else "  ⚠ ffmpeg 未検出"),
             fg="#555555" if _has_ffmpeg else "#cc6600",
             font=("", 8),
@@ -785,10 +834,12 @@ class IrodoriStudioApp:
         return BASE_CHECKPOINT_LABEL
 
     def _sync_infer_form_visibility(self) -> None:
-        """LoRA タブでは推論専用ブロック（本文・絵文字・出力・推論デバイス等）を隠す。"""
+        """LoRA タブでは推論専用ブロック（チェックポイント行・本文・絵文字等）を隠す。"""
         try:
+            icf = self._infer_ck_frame
             fr = self._infer_only_frame
             anchor = self._history_row_frame
+            f0 = self._f0_frame
             kw = self._infer_form_pack
         except AttributeError:
             return
@@ -797,9 +848,13 @@ class IrodoriStudioApp:
         except TclError:
             idx = 0
         if idx == 2:
+            if icf.winfo_ismapped():
+                icf.pack_forget()
             if fr.winfo_ismapped():
                 fr.pack_forget()
         else:
+            if not icf.winfo_ismapped():
+                icf.pack(after=f0, **kw)
             if not fr.winfo_ismapped():
                 fr.pack(after=anchor, **kw)
 
@@ -860,6 +915,52 @@ class IrodoriStudioApp:
         if len(base) > 115:
             base = base[:115]
         return _next_numbered_wav_path(out_dir, base)
+
+    def _compute_auto_output_wav_path_from_line(self, line: str) -> Path:
+        """連続生成用: 1 行分のテキストでファイル名を組み立てる。"""
+        out_dir = studio_root() / "outputs" / "generated"
+        voice = self._voice_slug_for_filename()
+        first_line = line.strip().split("\n")[0] if line else ""
+        text_part = _sanitize_filename_segment(first_line, 42)
+        base = f"{voice}_{text_part}"
+        if len(base) > 115:
+            base = base[:115]
+        return _next_numbered_wav_path(out_dir, base)
+
+    def _try_mp3_convert_with(
+        self,
+        wav_p: Path,
+        do_mp3: bool,
+        bitrate: str,
+    ) -> tuple[str | None, str]:
+        """MP3 変換（スレッドからも可）。戻り値: (mp3 パス or None, ログ行)。"""
+        if not do_mp3:
+            return None, ""
+        ff = studio_settings.resolve_ffmpeg_path()
+        if not ff:
+            return None, "MP3: ffmpeg が見つかりません（アプリ設定でパス指定可）\n"
+        br = (bitrate or "192k").strip()
+        if br not in studio_settings.MP3_BITRATES:
+            br = "192k"
+        mp3, err = convert_wav_to_mp3(wav_p, ffmpeg=ff, bitrate=br)
+        if mp3 is not None:
+            return str(mp3), f"MP3 変換: {mp3}\n"
+        return None, f"MP3 変換失敗: {err}\n"
+
+    def _try_mp3_convert(self, wav_p: Path) -> tuple[str | None, str]:
+        return self._try_mp3_convert_with(
+            wav_p,
+            self.var_mp3_convert.get(),
+            self.var_mp3_bitrate.get(),
+        )
+
+    def _persist_mp3_bitrate(self, _event: object = None) -> None:
+        br = self.var_mp3_bitrate.get().strip()
+        if br not in studio_settings.MP3_BITRATES:
+            br = "192k"
+            self.var_mp3_bitrate.set(br)
+        self._studio_settings["mp3_bitrate"] = br
+        studio_settings.save(self._studio_settings)
 
     def _apply_voice_design_character(self) -> None:
         """VoiceDesign タブへ切替え、キャプションを設定。"""
@@ -954,6 +1055,12 @@ class IrodoriStudioApp:
                 if "reading_text" in p:
                     self.txt_body.delete("1.0", END)
                     self.txt_body.insert("1.0", str(p["reading_text"]))
+                if "mp3_convert" in p:
+                    self.var_mp3_convert.set(bool(p["mp3_convert"]))
+                if p.get("mp3_bitrate") in studio_settings.MP3_BITRATES:
+                    self.var_mp3_bitrate.set(str(p["mp3_bitrate"]))
+                if "infer_local_checkpoint" in p and p["infer_local_checkpoint"] is not None:
+                    self.var_infer_checkpoint.set(str(p["infer_local_checkpoint"]))
                 self.status.set(f"保存プロファイル読込: {name}")
                 return
 
@@ -976,6 +1083,9 @@ class IrodoriStudioApp:
             "no_ref": self.var_no_ref.get(),
             "ref_wav": self.var_ref_wav.get().strip(),
             "reading_text": reading_text,
+            "mp3_convert": self.var_mp3_convert.get(),
+            "mp3_bitrate": self.var_mp3_bitrate.get().strip(),
+            "infer_local_checkpoint": self.var_infer_checkpoint.get().strip(),
         }
         presets = storage.load_presets()
         presets = [p for p in presets if str(p.get("name")) != name]
@@ -1060,6 +1170,22 @@ class IrodoriStudioApp:
             messagebox.showerror("再起動", str(e))
             return
         self.root.destroy()
+
+    def _open_wav_mp3_batch_tool(self) -> None:
+        """WAV 一括 MP3 ツールを別プロセスで起動。"""
+        script = studio_root() / "wav_to_mp3_gui.py"
+        if not script.is_file():
+            messagebox.showerror("エラー", f"スクリプトが見つかりません:\n{script}")
+            return
+        try:
+            subprocess.Popen(
+                [sys.executable, str(script)],
+                cwd=str(studio_root()),
+                env=_env_with_uv_on_path(),
+                close_fds=False,
+            )
+        except OSError as e:
+            messagebox.showerror("起動", str(e))
 
     def _load_text_file(self) -> None:
         p = filedialog.askopenfilename(
@@ -1418,7 +1544,13 @@ class IrodoriStudioApp:
             self.var_auto_filename.set(False)
             self.var_output_wav.set(p)
 
-    def _validate(self) -> tuple[list[str], Path] | None:
+    def _validate(
+        self,
+        *,
+        body_override: str | None = None,
+        output_path_override: Path | None = None,
+        skip_overwrite_prompt: bool = False,
+    ) -> tuple[list[str], Path] | None:
         try:
             mode_idx = self._notebook.index(self._notebook.select())
         except TclError:
@@ -1442,7 +1574,10 @@ class IrodoriStudioApp:
             )
             return None
 
-        body = self.txt_body.get("1.0", END).strip()
+        if body_override is not None:
+            body = body_override.strip()
+        else:
+            body = self.txt_body.get("1.0", END).strip()
         if not body:
             messagebox.showerror("エラー", "読み上げテキストを入力してください。")
             return None
@@ -1457,7 +1592,20 @@ class IrodoriStudioApp:
             )
             return None
 
-        if self.var_auto_filename.get():
+        local_ckpt = self.var_infer_checkpoint.get().strip()
+        if local_ckpt:
+            lcp = Path(local_ckpt)
+            if not lcp.is_file():
+                messagebox.showerror(
+                    "エラー",
+                    f"推論チェックポイントが見つかりません:\n{lcp}",
+                )
+                return None
+
+        if output_path_override is not None:
+            out = output_path_override
+            self.var_output_wav.set(str(out))
+        elif self.var_auto_filename.get():
             out = self._compute_auto_output_wav_path()
             self.var_output_wav.set(str(out))
         else:
@@ -1469,17 +1617,19 @@ class IrodoriStudioApp:
                 )
                 return None
             out = Path(raw_out)
-            if out.exists() and not messagebox.askyesno(
-                "上書き確認",
-                f"既存ファイルを上書きしますか？\n{out}",
-            ):
-                return None
+            if out.exists() and not skip_overwrite_prompt:
+                if not messagebox.askyesno(
+                    "上書き確認",
+                    f"既存ファイルを上書きしますか？\n{out}",
+                ):
+                    return None
         try:
             out.parent.mkdir(parents=True, exist_ok=True)
         except OSError as e:
             messagebox.showerror("エラー", f"出力フォルダを作成できません: {e}")
             return None
 
+        cap = ""
         if mode_idx == 0:
             no_ref = self.var_no_ref.get()
             ref = self.var_ref_wav.get().strip()
@@ -1537,19 +1687,25 @@ class IrodoriStudioApp:
             "run",
             "python",
             "infer.py",
-            "--hf-checkpoint",
-            ckpt_id,
-            "--text",
-            body,
-            "--output-wav",
-            str(out),
-            "--model-device",
-            device,
-            "--codec-device",
-            device,
-            "--num-steps",
-            str(steps),
         ]
+        if local_ckpt:
+            cmd.extend(["--checkpoint", local_ckpt])
+        else:
+            cmd.extend(["--hf-checkpoint", ckpt_id])
+        cmd.extend(
+            [
+                "--text",
+                body,
+                "--output-wav",
+                str(out),
+                "--model-device",
+                device,
+                "--codec-device",
+                device,
+                "--num-steps",
+                str(steps),
+            ]
+        )
 
         if mode_idx == 1:
             cmd.extend(["--caption", cap])
@@ -1567,9 +1723,156 @@ class IrodoriStudioApp:
 
         return cmd, tts
 
+    def _try_build_studio_batch_config(
+        self, lines: list[str]
+    ) -> tuple[dict, Path, list[Path]] | None:
+        """連続生成（1プロセスバッチ）用の設定 JSON。検証はメインスレッドで行う。"""
+        try:
+            mode_idx = self._notebook.index(self._notebook.select())
+        except TclError:
+            mode_idx = 0
+        if mode_idx == 2:
+            messagebox.showinfo(
+                "モード",
+                "LoRA 作成タブでは音声は生成できません。\n"
+                "「参照音声」または「VoiceDesign」タブに切り替えてください。",
+            )
+            return None
+
+        tts = Path(self.var_tts_dir.get().strip())
+        infer = tts / "infer.py"
+        if not infer.is_file():
+            messagebox.showerror(
+                "エラー",
+                f"infer.py が見つかりません。\n{infer}\n\n"
+                "Irodori-TTS を git clone し、そのフォルダを指定してください。",
+            )
+            return None
+
+        uv_bin = _which_uv()
+        if not uv_bin:
+            messagebox.showerror(
+                "エラー",
+                "uv が見つかりません。\n"
+                "PowerShell: irm https://astral.sh/uv/install.ps1 | iex\n"
+                "を実行してから再度お試しください。",
+            )
+            return None
+
+        local_ckpt = self.var_infer_checkpoint.get().strip()
+        if local_ckpt:
+            lcp = Path(local_ckpt)
+            if not lcp.is_file():
+                messagebox.showerror(
+                    "エラー",
+                    f"推論チェックポイントが見つかりません:\n{lcp}",
+                )
+                return None
+
+        cap = ""
+        if mode_idx == 0:
+            no_ref = self.var_no_ref.get()
+            ref = self.var_ref_wav.get().strip()
+            if not no_ref:
+                if not ref or not Path(ref).is_file():
+                    messagebox.showerror(
+                        "エラー",
+                        "参照音声を使う場合は有効な WAV ファイルを指定してください。",
+                    )
+                    return None
+            ckpt_id = CHECKPOINT_LABEL_TO_ID[BASE_CHECKPOINT_LABEL]
+        else:
+            no_ref = True
+            ref = ""
+            ckpt_id = CHECKPOINT_LABEL_TO_ID[vd_presets.VOICEDESIGN_CHECKPOINT_LABEL]
+            cap = self.var_caption.get().strip()
+            if not cap:
+                messagebox.showerror(
+                    "VoiceDesign",
+                    "VoiceDesign モードではキャプションを入力してください。\n"
+                    "キャラプリセットまたはテンプレを使うと簡単です。",
+                )
+                return None
+
+        try:
+            steps = int(self.var_num_steps.get().strip())
+            if steps < 1 or steps > 500:
+                raise ValueError
+        except ValueError:
+            messagebox.showerror("エラー", "品質（ステップ数）は 1〜500 の整数にしてください。")
+            return None
+
+        seed_str = self.var_seed.get().strip()
+        if seed_str:
+            try:
+                int(seed_str)
+            except ValueError:
+                messagebox.showerror("エラー", "シードは整数で指定するか、空にしてください。")
+                return None
+
+        device = self.var_device.get().strip()
+        if device == "cuda" and not torch_cuda_available(tts, uv_bin):
+            messagebox.showerror(
+                "CUDA が使えません",
+                "デバイスに cuda を選んでいますが、この環境では "
+                "torch.cuda.is_available() が False です。\n\n"
+                "・NVIDIA GPU とドライバが入っているか\n"
+                "・Irodori-TTS の venv に CUDA 対応 PyTorch が入っているか\n"
+                "を確認するか、デバイスを cpu に変更してください。",
+            )
+            return None
+
+        items: list[dict[str, str]] = []
+        out_paths: list[Path] = []
+        for line in lines:
+            outp = self._compute_auto_output_wav_path_from_line(line)
+            out_paths.append(outp)
+            items.append({"text": line, "output_wav": str(outp)})
+        try:
+            out_paths[0].parent.mkdir(parents=True, exist_ok=True)
+        except OSError as e:
+            messagebox.showerror("エラー", f"出力フォルダを作成できません: {e}")
+            return None
+
+        if local_ckpt:
+            ck: str | None = local_ckpt
+            hf_ck: str | None = None
+        else:
+            ck = None
+            hf_ck = ckpt_id
+
+        ref_wav: str | None = None
+        if mode_idx == 0 and not no_ref:
+            ref_wav = ref
+
+        config: dict = {
+            "checkpoint": ck,
+            "hf_checkpoint": hf_ck,
+            "model_device": device,
+            "codec_device": device,
+            "codec_repo": "Aratako/Semantic-DACVAE-Japanese-32dim",
+            "model_precision": "fp32",
+            "codec_precision": "fp32",
+            "codec_deterministic_encode": True,
+            "codec_deterministic_decode": True,
+            "enable_watermark": False,
+            "compile_model": False,
+            "compile_dynamic": False,
+            "num_steps": steps,
+            "seed": int(seed_str) if seed_str else None,
+            "caption": cap if mode_idx == 1 else None,
+            "no_ref": bool(no_ref) if mode_idx == 0 else True,
+            "ref_wav": ref_wav,
+            "items": items,
+        }
+        return config, tts, out_paths
+
     def _on_generate(self) -> None:
         if self._job_running:
-            messagebox.showinfo("実行中", "LoRA 学習が進行中です。完了を待つか、別ウィンドウで操作してください。")
+            messagebox.showinfo(
+                "実行中",
+                "バックグラウンド処理（LoRA 学習・連続生成など）が進行中です。完了を待ってください。",
+            )
             return
         validated = self._validate()
         if not validated:
@@ -1628,17 +1931,15 @@ class IrodoriStudioApp:
         )
         self._refresh_history_combo()
 
-        mp3_msg = ""
-        if self.var_mp3_convert.get() and out:
+        mp3_path_s: str | None = None
+        if out:
             wav_p = Path(out)
             if wav_p.is_file():
-                mp3 = _convert_wav_to_mp3(wav_p)
-                if mp3 is not None:
-                    mp3_msg = f"\nMP3: {mp3}"
-                    self._log_append(f"MP3 変換: {mp3}\n")
-                else:
-                    mp3_msg = "\n(MP3 変換失敗 — ffmpeg を確認してください)"
-                    self._log_append("MP3 変換に失敗しました。ffmpeg がインストールされているか確認してください。\n")
+                mp3_path_s, mp3_log = self._try_mp3_convert(wav_p)
+                if mp3_log:
+                    self._log_append(mp3_log)
+        self._last_output_wav = out or None
+        self._last_output_mp3 = mp3_path_s
 
         try:
             import winsound
@@ -1648,7 +1949,7 @@ class IrodoriStudioApp:
             pass
 
         if self.var_notify_done.get():
-            messagebox.showinfo("完了", f"保存しました:\n{out}{mp3_msg}")
+            self._show_completion_dialog(out, mp3_path_s)
 
     def _done_err(self, err: str) -> None:
         self.btn_gen.configure(state="normal")
@@ -1676,6 +1977,454 @@ class IrodoriStudioApp:
             "・ログ・履歴・保存プロファイルは config に保存されます。\n"
             "・初回は Hugging Face からモデルがダウンロードされます。",
         )
+
+    def _show_completion_dialog(self, wav_s: str | None, mp3_s: str | None) -> None:
+        """単発生成完了時: フォルダ／ファイルを開く。"""
+        top = Toplevel(self.root)
+        top.title("生成完了")
+        top.transient(self.root)
+        top.grab_set()
+        Label(top, text="生成が完了しました。").pack(padx=16, pady=(12, 8))
+        wav_p = Path(wav_s) if wav_s else None
+        mp3_p = Path(mp3_s) if mp3_s else None
+        fr = Frame(top)
+        fr.pack(pady=4)
+
+        def close() -> None:
+            try:
+                top.grab_release()
+            except TclError:
+                pass
+            top.destroy()
+
+        if wav_p is not None and wav_p.is_file():
+
+            def open_dir() -> None:
+                _open_folder_windows(wav_p.parent)
+                close()
+
+            def open_wav() -> None:
+                _open_path_windows(wav_p)
+                close()
+
+            Button(fr, text="出力フォルダを開く", command=open_dir).pack(side="left", padx=4)
+            Button(fr, text="WAV を開く", command=open_wav).pack(side="left", padx=4)
+        if mp3_p is not None and mp3_p.is_file():
+
+            def open_mp3() -> None:
+                _open_path_windows(mp3_p)
+                close()
+
+            Button(fr, text="MP3 を開く", command=open_mp3).pack(side="left", padx=4)
+        Button(top, text="閉じる", command=close).pack(pady=(4, 12))
+
+    def _browse_infer_checkpoint(self) -> None:
+        p = filedialog.askopenfilename(
+            title="推論チェックポイントを選択（.safetensors）",
+            filetypes=[
+                ("Safetensors", "*.safetensors"),
+                ("すべて", "*.*"),
+            ],
+        )
+        if p:
+            self.var_infer_checkpoint.set(p)
+
+    def _open_app_settings(self) -> None:
+        top = Toplevel(self.root)
+        top.title("アプリ設定")
+        top.transient(self.root)
+        var_ff = StringVar(value=str(self._studio_settings.get("ffmpeg_path", "") or ""))
+        var_log = StringVar(value=str(self._studio_settings.get("log_max_lines", 3000)))
+
+        Label(
+            top,
+            text="ffmpeg のフルパス（空のときは PATH から検索）",
+            anchor="w",
+        ).pack(fill="x", padx=12, pady=(12, 2))
+        Entry(top, textvariable=var_ff, width=72).pack(fill="x", padx=12)
+        f_btn = Frame(top)
+        f_btn.pack(fill="x", padx=12, pady=4)
+
+        def browse_ff() -> None:
+            fp = filedialog.askopenfilename(
+                title="ffmpeg を選択",
+                filetypes=[("実行ファイル", "*.exe"), ("すべて", "*.*")],
+            )
+            if fp:
+                var_ff.set(fp)
+
+        Button(f_btn, text="参照…", command=browse_ff).pack(side="left")
+
+        Label(
+            top,
+            text="ログの最大行数（超えた分は先頭から削除）",
+            anchor="w",
+        ).pack(fill="x", padx=12, pady=(8, 2))
+        Entry(top, textvariable=var_log, width=12).pack(anchor="w", padx=12)
+
+        def save_settings() -> None:
+            self._studio_settings["ffmpeg_path"] = var_ff.get().strip()
+            try:
+                lm = int(var_log.get().strip())
+            except ValueError:
+                messagebox.showerror("設定", "ログ行数は整数で入力してください。", parent=top)
+                return
+            self._studio_settings["log_max_lines"] = max(500, min(50_000, lm))
+            studio_settings.save(self._studio_settings)
+            messagebox.showinfo("設定", "保存しました。", parent=top)
+            top.destroy()
+
+        Button(top, text="保存", command=save_settings).pack(pady=12)
+
+    def _log_batch_line(self, idx: int, total: int, msg: str) -> None:
+        self._log_append(f"\n----- 連続生成 [{idx}/{total}] -----\n")
+        tail = msg[-12_000:] if len(msg) > 12_000 else msg
+        self._log_append(tail)
+        if not tail.endswith("\n"):
+            self._log_append("\n")
+        self.status.set(f"連続生成中…（{idx}/{total}）")
+
+    def _batch_finished(
+        self,
+        ok: bool,
+        total: int,
+        failed_at: int | None,
+        err: str | None = None,
+    ) -> None:
+        self._job_running = False
+        try:
+            title = self._notebook.tab(self._notebook.select(), "text")
+        except TclError:
+            title = ""
+        if title == LORA_TAB_TITLE:
+            self.btn_gen.configure(state="disabled")
+        else:
+            self.btn_gen.configure(state="normal")
+
+        if ok:
+            self.status.set("連続生成 完了")
+            self._log_append(f"\n連続生成: {total} 件すべて完了。\n")
+            try:
+                import winsound
+
+                winsound.MessageBeep(winsound.MB_ICONASTERISK)
+            except Exception:
+                pass
+            if self.var_notify_done.get():
+                gen_dir = studio_root() / "outputs" / "generated"
+                if gen_dir.is_dir():
+                    _open_folder_windows(gen_dir)
+            messagebox.showinfo("連続生成", f"{total} 件すべて完了しました。")
+            return
+
+        self.status.set("連続生成 エラー")
+        if err:
+            self._log_append(err)
+            if not err.endswith("\n"):
+                self._log_append("\n")
+        hint = ""
+        if failed_at is not None:
+            hint = f"{failed_at}/{total} 件目で失敗しました。\n\n"
+        messagebox.showerror(
+            "連続生成",
+            hint + (err[-6000:] if err else "不明なエラー"),
+        )
+
+    def _run_batch_generate(self) -> None:
+        if self._job_running:
+            messagebox.showinfo(
+                "実行中",
+                "バックグラウンド処理が進行中です。完了を待ってください。",
+            )
+            return
+        try:
+            if self._notebook.index(self._notebook.select()) == 2:
+                messagebox.showinfo(
+                    "連続生成",
+                    "LoRA 作成タブでは連続生成できません。\n"
+                    "「参照音声」または「VoiceDesign」に切り替えてください。",
+                )
+                return
+        except TclError:
+            pass
+
+        raw = self.txt_body.get("1.0", END)
+        lines = [ln.strip() for ln in raw.splitlines() if ln.strip()]
+        if not lines:
+            messagebox.showerror("連続生成", "本文に空でない行がありません。")
+            return
+        nlines = len(lines)
+        if nlines > 300:
+            if not messagebox.askyesno(
+                "確認",
+                f"{nlines} 行あります。連続生成を続行しますか？",
+            ):
+                return
+
+        tts_root = Path(self.var_tts_dir.get().strip())
+        batch_script = tts_root / "scripts" / "studio_batch_infer.py"
+        use_batch_infer = batch_script.is_file()
+
+        prepared: tuple[dict, Path, list[Path]] | None = None
+        planned: list[tuple[list[str], Path, Path]] = []
+
+        if use_batch_infer:
+            p = self._try_build_studio_batch_config(lines)
+            if not p:
+                return
+            prepared = p
+        else:
+            for line in lines:
+                out_path = self._compute_auto_output_wav_path_from_line(line)
+                validated = self._validate(
+                    body_override=line,
+                    output_path_override=out_path,
+                    skip_overwrite_prompt=True,
+                )
+                if not validated:
+                    return
+                cmd, tts = validated
+                planned.append((cmd, tts, out_path))
+
+        self._job_running = True
+        self.btn_gen.configure(state="disabled")
+        self.status.set(f"連続生成中（0/{nlines}）…")
+        if use_batch_infer:
+            self._log_append(
+                f"\n========== 連続生成開始: {nlines} 行（モデルは1回だけロード）==========\n"
+            )
+        else:
+            self._log_append(f"\n========== 連続生成開始: {nlines} 行 ==========\n")
+            self._log_append(
+                "※ Irodori-TTS に scripts/studio_batch_infer.py が無いため、"
+                "行ごとに infer を起動します（時間がかかります）。\n"
+            )
+
+        do_mp3 = self.var_mp3_convert.get()
+        br = self.var_mp3_bitrate.get().strip()
+
+        def work() -> None:
+            total = nlines
+            if prepared is not None:
+                config, cwd, out_paths = prepared
+                tmp_path: Path | None = None
+                try:
+                    with tempfile.NamedTemporaryFile(
+                        mode="w",
+                        encoding="utf-8",
+                        suffix=".json",
+                        delete=False,
+                    ) as tf:
+                        json.dump(config, tf, ensure_ascii=False)
+                        tmp_path = Path(tf.name)
+                    uv_bin = _which_uv()
+                    if not uv_bin:
+                        self.root.after(
+                            0,
+                            lambda: self._batch_finished(
+                                False, total, 1, "uv が見つかりません。"
+                            ),
+                        )
+                        return
+                    proc = subprocess.run(
+                        [
+                            uv_bin,
+                            "run",
+                            "python",
+                            "scripts/studio_batch_infer.py",
+                            "--config",
+                            str(tmp_path),
+                        ],
+                        cwd=str(cwd),
+                        env=_env_with_uv_on_path(),
+                        capture_output=True,
+                        text=True,
+                        encoding="utf-8",
+                        errors="replace",
+                    )
+                except OSError as e:
+                    self.root.after(
+                        0,
+                        lambda: self._batch_finished(False, total, 1, str(e)),
+                    )
+                    return
+                finally:
+                    if tmp_path is not None:
+                        try:
+                            tmp_path.unlink()
+                        except OSError:
+                            pass
+
+                msg = proc.stdout + ("\n" + proc.stderr if proc.stderr else "")
+
+                def _log_one_shot() -> None:
+                    self._log_append(
+                        f"\n----- 連続生成（1プロセス・全 {total} 行）-----\n"
+                    )
+                    tail = msg[-12_000:] if len(msg) > 12_000 else msg
+                    self._log_append(tail)
+                    if not tail.endswith("\n"):
+                        self._log_append("\n")
+                    self.status.set(f"連続生成中…（{total}/{total}）")
+
+                self.root.after(0, _log_one_shot)
+
+                if proc.returncode != 0:
+                    err = f"終了コード {proc.returncode}\n\n{msg[-12_000:]}"
+                    self.root.after(
+                        0,
+                        lambda e=err: self._batch_finished(False, total, 1, e),
+                    )
+                    return
+
+                for out_path in out_paths:
+                    _mp3_p, mp3_log = self._try_mp3_convert_with(out_path, do_mp3, br)
+                    if mp3_log:
+                        self.root.after(0, lambda log=mp3_log: self._log_append(log))
+
+                self.root.after(0, lambda: self._batch_finished(True, total, None, None))
+                return
+
+            for i, (cmd, cwd, out_path) in enumerate(planned):
+                cur = i + 1
+                try:
+                    proc = subprocess.run(
+                        cmd,
+                        cwd=str(cwd),
+                        env=_env_with_uv_on_path(),
+                        capture_output=True,
+                        text=True,
+                        encoding="utf-8",
+                        errors="replace",
+                    )
+                except OSError as e:
+                    self.root.after(
+                        0,
+                        lambda: self._batch_finished(False, total, cur, str(e)),
+                    )
+                    return
+                msg = proc.stdout + ("\n" + proc.stderr if proc.stderr else "")
+                self.root.after(
+                    0,
+                    lambda m=msg, c=cur, t=total: self._log_batch_line(c, t, m),
+                )
+                if proc.returncode != 0:
+                    err = f"終了コード {proc.returncode}\n\n{msg[-12_000:]}"
+                    self.root.after(
+                        0,
+                        lambda e=err, c=cur, t=total: self._batch_finished(
+                            False, t, c, e
+                        ),
+                    )
+                    return
+                _mp3_p, mp3_log = self._try_mp3_convert_with(out_path, do_mp3, br)
+                if mp3_log:
+                    self.root.after(0, lambda log=mp3_log: self._log_append(log))
+
+            self.root.after(0, lambda: self._batch_finished(True, total, None, None))
+
+        threading.Thread(target=work, daemon=True).start()
+
+    def _trim_ref_wav_dialog(self) -> None:
+        ff = studio_settings.resolve_ffmpeg_path()
+        if not ff:
+            messagebox.showerror(
+                "参照 WAV を切り出し",
+                "ffmpeg が見つかりません。\n"
+                "ファイル → アプリ設定 でパスを指定するか、PATH に追加してください。",
+            )
+            return
+        src = filedialog.askopenfilename(
+            title="元の WAV を選択",
+            filetypes=[("WAV", "*.wav"), ("すべて", "*.*")],
+        )
+        if not src:
+            return
+        start_s = askstring("切り出し", "開始位置（秒。例: 1.5）:")
+        if start_s is None:
+            return
+        dur_s = askstring("切り出し", "長さ（秒。例: 10）:")
+        if dur_s is None:
+            return
+        try:
+            ss = float(start_s.strip().replace(",", "."))
+            dur = float(dur_s.strip().replace(",", "."))
+        except ValueError:
+            messagebox.showerror("切り出し", "開始・長さは数値で指定してください。")
+            return
+        if dur <= 0:
+            messagebox.showerror("切り出し", "長さは正の数にしてください。")
+            return
+
+        default_name = Path(src).stem + "_trim.wav"
+        out = filedialog.asksaveasfilename(
+            title="切り出した WAV の保存先",
+            defaultextension=".wav",
+            initialfile=default_name,
+            filetypes=[("WAV", "*.wav"), ("すべて", "*.*")],
+        )
+        if not out:
+            return
+        out_p = Path(out)
+        try:
+            out_p.parent.mkdir(parents=True, exist_ok=True)
+        except OSError as e:
+            messagebox.showerror("切り出し", f"保存先を作成できません: {e}")
+            return
+
+        self.status.set("参照 WAV 切り出し中…")
+        cmd = [
+            ff,
+            "-y",
+            "-ss",
+            str(ss),
+            "-i",
+            src,
+            "-t",
+            str(dur),
+            str(out_p),
+        ]
+
+        def work() -> None:
+            try:
+                proc = subprocess.run(
+                    cmd,
+                    capture_output=True,
+                    text=True,
+                    encoding="utf-8",
+                    errors="replace",
+                    timeout=600,
+                )
+            except (OSError, subprocess.TimeoutExpired) as e:
+                self.root.after(
+                    0,
+                    lambda: self._trim_ref_done(str(e), None),
+                )
+                return
+            msg = (proc.stderr or proc.stdout or "").strip()
+            if proc.returncode != 0:
+                err = msg or f"ffmpeg 終了コード {proc.returncode}"
+                self.root.after(
+                    0,
+                    lambda: self._trim_ref_done(err, None),
+                )
+                return
+            self.root.after(0, lambda: self._trim_ref_done(None, out_p))
+
+        threading.Thread(target=work, daemon=True).start()
+
+    def _trim_ref_done(self, err: str | None, out_p: Path | None) -> None:
+        if err:
+            self.status.set("切り出し エラー")
+            self._log_append(f"参照 WAV 切り出し失敗:\n{err}\n")
+            messagebox.showerror("切り出し", err[-4000:])
+            return
+        self.status.set("切り出し 完了")
+        if out_p is not None:
+            self._log_append(f"参照 WAV 切り出し: {out_p}\n")
+            messagebox.showinfo("切り出し", f"保存しました:\n{out_p}")
+            if messagebox.askyesno("参照 WAV", "このファイルを参照音声に設定しますか？"):
+                self.var_ref_wav.set(str(out_p))
 
 
 def run_app() -> None:
