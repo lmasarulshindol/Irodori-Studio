@@ -1,0 +1,24 @@
+{
+  "hf_checkpoint": "Aratako/Irodori-TTS-500M-v2-VoiceDesign",
+  "model_device": "cpu",
+  "codec_device": "cpu",
+  "codec_repo": "Aratako/Semantic-DACVAE-Japanese-32dim",
+  "model_precision": "fp32",
+  "codec_precision": "fp32",
+  "codec_deterministic_encode": true,
+  "codec_deterministic_decode": true,
+  "enable_watermark": false,
+  "compile_model": false,
+  "compile_dynamic": false,
+  "num_steps": 20,
+  "seed": 20260417,
+  "no_ref": true,
+  "caption": null,
+  "items": [
+    {
+      "text": "お待たせしました♪",
+      "caption": "【話者固定】10歳の少女。やや高めで明瞭な子供の声質。BabyDollキャスト佐藤莉子。このセリフの演技: 甘く弾んだ挨拶。小悪魔っぽい明るさと、初対面の華やかさ。",
+      "output_wav": "outputs/babydoll_ep1_scene3_plus/_smoke_test.wav"
+    }
+  ]
+}
