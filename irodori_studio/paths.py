@@ -11,5 +11,5 @@ def studio_root() -> Path:
 
 
 def default_irodori_tts_dir() -> Path:
-    """同じ親フォルダ上の Irodori-TTS（公式クローン）のデフォルトパス。"""
-    return studio_root().parent / "Irodori-TTS"
+    """本リポジトリに同梱した Irodori-TTS（`infer.py` があるディレクトリ）のデフォルトパス。"""
+    return studio_root() / "Irodori-TTS"

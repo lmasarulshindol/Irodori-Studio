@@ -53,6 +53,7 @@ CHECKPOINT_LABELS = [c[0] for c in CHECKPOINTS]
 BASE_CHECKPOINT_LABEL = CHECKPOINTS[0][0]
 TEXT_GUIDE_PATH = studio_root() / "docs" / "text-creation-guideline.md"
 LORA_GUIDE_PATH = studio_root() / "docs" / "lora-training-guideline.md"
+BATCH_GUIDE_PATH = studio_root() / "docs" / "batch-generation-guideline.md"
 PROFILE_PLACEHOLDER = "保存プロファイルを選ぶ…"
 HISTORY_PLACEHOLDER = "履歴を選ぶ…"
 
@@ -277,6 +278,10 @@ class IrodoriStudioApp:
         help_menu.add_command(
             label="LoRA 作成ガイドを開く",
             command=self._open_lora_training_guide,
+        )
+        help_menu.add_command(
+            label="一括生成ガイドを開く",
+            command=self._open_batch_generation_guide,
         )
         help_menu.add_command(
             label="VoiceDesign モデルカード（HF）",
@@ -1000,6 +1005,12 @@ class IrodoriStudioApp:
             messagebox.showerror("ガイド", f"ガイドが見つかりません:\n{LORA_GUIDE_PATH}")
             return
         _open_path_windows(LORA_GUIDE_PATH)
+
+    def _open_batch_generation_guide(self) -> None:
+        if not BATCH_GUIDE_PATH.is_file():
+            messagebox.showerror("ガイド", f"ガイドが見つかりません:\n{BATCH_GUIDE_PATH}")
+            return
+        _open_path_windows(BATCH_GUIDE_PATH)
 
     def _open_emoji_annotations(self) -> None:
         webbrowser.open(

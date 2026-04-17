@@ -3,3 +3,18 @@ __pycache__/
 outputs/
 config/
 .venv/
+
+# 同梱の Irodori-TTS（公式相当）— ソースはコミット、ローカル生成物は除外
+Irodori-TTS/.venv/
+Irodori-TTS/outputs/
+Irodori-TTS/**/__pycache__/
+Irodori-TTS/.pytest_cache/
+Irodori-TTS/.ruff_cache/
+Irodori-TTS/wandb/
+Irodori-TTS/gradio_outputs/
+Irodori-TTS/gradio_outputs_voicedesign/
+
+# ローカル試行用（サンプル音声・ログ）
+Irodori-TTS/scripts/yane_voicedesign_wav/
+Irodori-TTS/scripts/yane_batch_err.txt
+Irodori-TTS/scripts/yane_batch_log.txt

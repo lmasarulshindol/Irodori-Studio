@@ -1,0 +1,68 @@
+{
+  "hf_checkpoint": "Aratako/Irodori-TTS-500M-v2-VoiceDesign",
+  "model_device": "cpu",
+  "codec_device": "cpu",
+  "codec_repo": "Aratako/Semantic-DACVAE-Japanese-32dim",
+  "model_precision": "fp32",
+  "codec_precision": "fp32",
+  "codec_deterministic_encode": true,
+  "codec_deterministic_decode": true,
+  "enable_watermark": false,
+  "compile_model": false,
+  "compile_dynamic": false,
+  "num_steps": 20,
+  "seed": null,
+  "no_ref": true,
+  "items": [
+    {
+      "text": "ねえねえ、今日はどこに行くの？　わたし、ずーっと待ってたんだよ！",
+      "caption": "明るく幼い少女の声。少し甘えたトーンで、はっきりした発音。",
+      "output_wav": "outputs/loli_trial/001.wav"
+    },
+    {
+      "text": "えへへ……お兄ちゃん、ちょっとだけなら、手つないでもいい？",
+      "caption": "明るく幼い少女の声。恥ずかしげで甘い、小声。",
+      "output_wav": "outputs/loli_trial/002.wav"
+    },
+    {
+      "text": "やだもう！　また遅刻しちゃった！　急がなきゃ、間に合わないよぉ！",
+      "caption": "明るく幼い少女の声。焦っていてテンポが速め。",
+      "output_wav": "outputs/loli_trial/003.wav"
+    },
+    {
+      "text": "このお菓子、半分こしよ？　ふたりで食べると、もっとおいしい気がするの。",
+      "caption": "明るく幼い少女の声。やわらかく優しいトーン。",
+      "output_wav": "outputs/loli_trial/004.wav"
+    },
+    {
+      "text": "暗いところはちょっとだけ……こわい。そばにいてくれる？",
+      "caption": "幼い少女の声。おびえたように小さめの声。",
+      "output_wav": "outputs/loli_trial/005.wav"
+    },
+    {
+      "text": "わたしね、大きくなったら、みんなを守れるヒーローになるんだ！",
+      "caption": "明るく幼い少女の声。元気で前向き、少し高め。",
+      "output_wav": "outputs/loli_trial/006.wav"
+    },
+    {
+      "text": "んもー、ちゃんと聞いてる？　わたしの話、すっごく大事なのに！",
+      "caption": "幼い少女の声。拗ねたような、少し強い口調。",
+      "output_wav": "outputs/loli_trial/007.wav"
+    },
+    {
+      "text": "きゃっ……びっくりしたぁ。いきなり触らないでよ、もう。",
+      "caption": "幼い少女の声。驚いてから照れ、恥ずかしさ。",
+      "output_wav": "outputs/loli_trial/008.wav"
+    },
+    {
+      "text": "今日の宿題、一緒にやろ？　わたし、算数だけはちょっと自信あるんだ。",
+      "caption": "明るく幼い少女の声。誘うように明るく。",
+      "output_wav": "outputs/loli_trial/009.wav"
+    },
+    {
+      "text": "おやすみのキス、してくれたら……明日も、いい夢みられそう。",
+      "caption": "幼い少女の声。ささやくように甘く、眠る前のトーン。",
+      "output_wav": "outputs/loli_trial/010.wav"
+    }
+  ]
+}

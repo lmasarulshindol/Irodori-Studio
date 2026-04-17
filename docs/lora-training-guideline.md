@@ -22,7 +22,7 @@
 
 ## 2. 事前準備（環境）
 
-1. **Irodori-TTS 本体**をクローンし、リポジトリ直下で `uv sync` 済みであること（[Installation](https://github.com/Aratako/Irodori-TTS#installation)）。
+1. **Irodori-TTS 本体**が利用できること。本リポジトリでは **`Irodori-TTS/`** に同梱されているので、その直下で `uv sync` 済みであればよい（[Installation](https://github.com/Aratako/Irodori-TTS#installation)）。別途公式をクローンしている場合は、そのルートで同様に `uv sync` してください。
 2. **uv** が PATH に通っていること（Studio の推論・学習の両方で使用）。
 3. **学習デバイス**
    - **GPU（CUDA）推奨**。CPU でも動かせる設定はありますが、時間・実用性の面で厳しいことが多いです。

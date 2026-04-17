@@ -4,7 +4,13 @@
 
 ## 前提
 
-- **Irodori-TTS 本体**を同じ親フォルダにクローンし、`uv sync` まで完了していること（例: `001_声優・音声/Irodori-TTS`）。
+- **Irodori-TTS 本体**は本リポジトリの **`Irodori-TTS/`** に同梱されています。初回のみ次で依存を入れてください。
+
+  ```powershell
+  cd Irodori-TTS
+  uv sync
+  ```
+
 - **uv** が入っていること（未導入の場合は PowerShell で次を実行）。
 
 ```powershell
@@ -30,6 +36,12 @@ py -3 main.py
 
 - [docs/text-creation-guideline.md](docs/text-creation-guideline.md)
 
+## セリフ一括生成のガイドライン
+
+複数行をモデル1回ロードで連続合成する手順（JSON マニフェスト・GUI 連続生成・任意の HTTP API）は次を参照してください。
+
+- [docs/batch-generation-guideline.md](docs/batch-generation-guideline.md)
+
 ## LoRA 学習のガイドライン
 
 `prepare_manifest.py` から `train.py` までの流れ、YAML の選び方、Studio の LoRA タブの使い方は次を参照してください。
@@ -38,7 +50,7 @@ py -3 main.py
 
 ## GUI の使い方
 
-1. **Irodori-TTS フォルダ**: `infer.py` があるディレクトリ（既定は隣の `Irodori-TTS`）。
+1. **Irodori-TTS フォルダ**: `infer.py` があるディレクトリ（既定は本リポジトリ内の `Irodori-TTS`）。
 2. **モードのタブ**:
    - `参照音声（基本モデル）`: 参照 WAV で声を寄せる
    - `VoiceDesign（キャプション）`: 参照なしで、キャプションで話者を指定する
@@ -69,9 +81,10 @@ py -3 -m pytest
 ## ディレクトリ構成の例
 
 ```text
-001_声優・音声/
-  Irodori-TTS/      # git clone https://github.com/Aratako/Irodori-TTS.git && uv sync
-  Irodori-Studio/   # このリポジトリ（GUI）
+Irodori-Studio/          # このリポジトリ（GUI）
+  Irodori-TTS/           # 音声合成エンジン（同梱。初回 uv sync）
+  docs/                  # 各種ガイドライン
+  irodori_studio/        # GUI ソース
 ```
 
 ## ライセンス

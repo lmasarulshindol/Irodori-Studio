@@ -1,0 +1,619 @@
+{
+  "source_pdf": "C:/Users/MasaruShindo/work2/001_声優・音声/VoiceActorLaboratory/台本/PDF/屋上ライブはトラブルだらけ！.pdf",
+  "title": "屋上ライブはトラブルだらけ！",
+  "line_count": 102,
+  "items": [
+    {
+      "role": "kinugawa",
+      "role_label": "鬼怒川",
+      "line_index": 1,
+      "text": "おかしいな……、昨日から連絡とれないんだよな……"
+    },
+    {
+      "role": "mayu",
+      "role_label": "まゆ",
+      "line_index": 1,
+      "text": "剛さん、信号変わりましたよ"
+    },
+    {
+      "role": "kinugawa",
+      "role_label": "鬼怒川",
+      "line_index": 2,
+      "text": "ああ、ごめんごめん"
+    },
+    {
+      "role": "ichigo",
+      "role_label": "いちご",
+      "line_index": 1,
+      "text": "朝からなにイライラしてるんですかあ？"
+    },
+    {
+      "role": "kinugawa",
+      "role_label": "鬼怒川",
+      "line_index": 3,
+      "text": "今日のライブで司会してくれるタレントさんに確認のメール送ってるんだけど、全然返事がなくって"
+    },
+    {
+      "role": "mayu",
+      "role_label": "まゆ",
+      "line_index": 2,
+      "text": "心配しすぎですよ。向こうだってプロなんだから大丈夫"
+    },
+    {
+      "role": "ichigo",
+      "role_label": "いちご",
+      "line_index": 2,
+      "text": "そうですよ。さっきコンビニで買ったイチゴの新作スイーツ、一口あげましょうか？"
+    },
+    {
+      "role": "mayu",
+      "role_label": "まゆ",
+      "line_index": 3,
+      "text": "わ、いちごちゃん、見て見て！さっき投稿した告知に、こんなにたくさんコメントついてるよ！"
+    },
+    {
+      "role": "ichigo",
+      "role_label": "いちご",
+      "line_index": 3,
+      "text": "さすがまゆさんです！お客さんに会えるの楽しみですねー！"
+    },
+    {
+      "role": "kinugawa",
+      "role_label": "鬼怒川",
+      "line_index": 4,
+      "text": "忘れ物とかしてないよな……。はあ、胃が痛い……"
+    },
+    {
+      "role": "kinugawa",
+      "role_label": "鬼怒川",
+      "line_index": 5,
+      "text": "ついたぞ。ここが今日のライブ会場だ"
+    },
+    {
+      "role": "ichigo",
+      "role_label": "いちご",
+      "line_index": 4,
+      "text": "うわー！大きなショッピングモールですねえ！"
+    },
+    {
+      "role": "mayu",
+      "role_label": "まゆ",
+      "line_index": 4,
+      "text": "この屋上でライブするのかあ。天気もいいし、楽しみだね！"
+    },
+    {
+      "role": "ichigo",
+      "role_label": "いちご",
+      "line_index": 5,
+      "text": "ですね！考えてみれば、私たちだけのライブって初めてですね"
+    },
+    {
+      "role": "mayu",
+      "role_label": "まゆ",
+      "line_index": 5,
+      "text": "今までは、対バンとかゲスト出演ばっかりだったもんね。だからこそ、余計に気合が入るってもんよ！"
+    },
+    {
+      "role": "kinugawa",
+      "role_label": "鬼怒川",
+      "line_index": 6,
+      "text": "こっちが従業員入口か。おはようございます！本日、ショッピングモールの屋上でライブをさせていただきます、冬森まゆと天宮いちごです。よろしくお願いします……。"
+    },
+    {
+      "role": "mayu",
+      "role_label": "まゆ",
+      "line_index": 6,
+      "text": "剛さん！いちごちゃん！このポスターみて！"
+    },
+    {
+      "role": "ichigo",
+      "role_label": "いちご",
+      "line_index": 6,
+      "text": "私たちのライブのポスターですね！"
+    },
+    {
+      "role": "mayu",
+      "role_label": "まゆ",
+      "line_index": 7,
+      "text": "日付けのところ……、来週になってる！"
+    },
+    {
+      "role": "kinugawa",
+      "role_label": "鬼怒川",
+      "line_index": 7,
+      "text": "えええええええ！？"
+    },
+    {
+      "role": "kinugawa",
+      "role_label": "鬼怒川",
+      "line_index": 8,
+      "text": "なんてことだ……。ショッピングモール側が日付を一週間勘違いしてたなんて……"
+    },
+    {
+      "role": "ichigo",
+      "role_label": "いちご",
+      "line_index": 7,
+      "text": "幸い、今日は屋上のステージは空いてるみたいですよ！"
+    },
+    {
+      "role": "kinugawa",
+      "role_label": "鬼怒川",
+      "line_index": 9,
+      "text": "でも、司会者もいないし、音響も照明もなんにも準備できてない！こんなんじゃライブできないだろ……"
+    },
+    {
+      "role": "mayu",
+      "role_label": "まゆ",
+      "line_index": 8,
+      "text": "でも、お客さんたちはもうこっちに向かってきてます！今更中止だなんて言えませんよ"
+    },
+    {
+      "role": "kinugawa",
+      "role_label": "鬼怒川",
+      "line_index": 10,
+      "text": "そうだ。握手会とか、サイン会に内容を変更するのはどうだ？それなら、音や照明がなくてもなんとかなるよな？"
+    },
+    {
+      "role": "mayu",
+      "role_label": "まゆ",
+      "line_index": 9,
+      "text": "剛さん。この投稿、読んでみてください"
+    },
+    {
+      "role": "kinugawa",
+      "role_label": "鬼怒川",
+      "line_index": 11,
+      "text": "ん、なになに……。『今日はまゆちゃんといちごちゃんの初の単独ライブ！この日を楽しみに今日まで生きてきた！サイリウム振りまくるぞ！』"
+    },
+    {
+      "role": "ichigo",
+      "role_label": "いちご",
+      "line_index": 8,
+      "text": "すっごい楽しみにしてくれるんですね～"
+    },
+    {
+      "role": "mayu",
+      "role_label": "まゆ",
+      "line_index": 10,
+      "text": "せっかく足を運んでくれるお客さんたちを、がっかりさせたくない。なんとか、ライブできる方法を考えましょう！"
+    },
+    {
+      "role": "kinugawa",
+      "role_label": "鬼怒川",
+      "line_index": 12,
+      "text": "そうは言ってもだな……"
+    },
+    {
+      "role": "ichigo",
+      "role_label": "いちご",
+      "line_index": 9,
+      "text": "あ！いつも練習のときに使ってるラジカセ、車の後ろに積んでますよね？あれで音楽流せばいいんじゃないですか？"
+    },
+    {
+      "role": "mayu",
+      "role_label": "まゆ",
+      "line_index": 11,
+      "text": "いいかも！あれおっきな音でるもんね"
+    },
+    {
+      "role": "kinugawa",
+      "role_label": "鬼怒川",
+      "line_index": 13,
+      "text": "照明はどうするんだ？スタッフさんもいないし、機材もないぞ"
+    },
+    {
+      "role": "mayu",
+      "role_label": "まゆ",
+      "line_index": 12,
+      "text": "こんなにいい天気なんだから、おひさまの光だけで十分ですよ！"
+    },
+    {
+      "role": "ichigo",
+      "role_label": "いちご",
+      "line_index": 10,
+      "text": "青空ライブって感じで、なんかいいですねー"
+    },
+    {
+      "role": "kinugawa",
+      "role_label": "鬼怒川",
+      "line_index": 14,
+      "text": "司会はどうする？"
+    },
+    {
+      "role": "mayu",
+      "role_label": "まゆ",
+      "line_index": 13,
+      "text": "剛さんがやったらいいじゃないですか"
+    },
+    {
+      "role": "kinugawa",
+      "role_label": "鬼怒川",
+      "line_index": 15,
+      "text": "え、お、俺？いや、俺はあくまでマネージャーであって、人前にでるのはちょっと……"
+    },
+    {
+      "role": "ichigo",
+      "role_label": "いちご",
+      "line_index": 11,
+      "text": "あ、でも剛さんが司会で出ちゃったら、ラジカセの操作は誰がするんですか？"
+    },
+    {
+      "role": "mayu",
+      "role_label": "まゆ",
+      "line_index": 14,
+      "text": "あ、そっか！じゃあ剛さんは、音響をお願いします！司会は、私たちでやろっ！"
+    },
+    {
+      "role": "ichigo",
+      "role_label": "いちご",
+      "line_index": 12,
+      "text": "いいですね！楽しそう！"
+    },
+    {
+      "role": "kinugawa",
+      "role_label": "鬼怒川",
+      "line_index": 16,
+      "text": "音響か……機械は苦手なんだが……"
+    },
+    {
+      "role": "mayu",
+      "role_label": "まゆ",
+      "line_index": 15,
+      "text": "ラジカセのスイッチ押すだけですよ"
+    },
+    {
+      "role": "ichigo",
+      "role_label": "いちご",
+      "line_index": 13,
+      "text": "それとも、司会やります～？"
+    },
+    {
+      "role": "kinugawa",
+      "role_label": "鬼怒川",
+      "line_index": 17,
+      "text": "うう……胃が痛い……"
+    },
+    {
+      "role": "mayu",
+      "role_label": "まゆ",
+      "line_index": 16,
+      "text": "ようし、そうと決まればさっそく打ち合わせ！まずは音楽の中で私たちがこんにちわーって登場するでしょ"
+    },
+    {
+      "role": "ichigo",
+      "role_label": "いちご",
+      "line_index": 14,
+      "text": "せっかくだから、お客さんとおしゃべりもしたいですよねー"
+    },
+    {
+      "role": "mayu",
+      "role_label": "まゆ",
+      "line_index": 17,
+      "text": "それいいねー！なんか一緒にゲームとかする？"
+    },
+    {
+      "role": "ichigo",
+      "role_label": "いちご",
+      "line_index": 15,
+      "text": "実は、私が考えたイチゴゲームっていうのがあるんですよ～"
+    },
+    {
+      "role": "mayu",
+      "role_label": "まゆ",
+      "line_index": 18,
+      "text": "えー何それ！教えて教えて"
+    },
+    {
+      "role": "kinugawa",
+      "role_label": "鬼怒川",
+      "line_index": 18,
+      "text": "大丈夫かな……"
+    },
+    {
+      "role": "mayu",
+      "role_label": "まゆ",
+      "line_index": 19,
+      "text": "いちごちゃん、あんまりステージに近づいたらお客さんに見えちゃうよ"
+    },
+    {
+      "role": "ichigo",
+      "role_label": "いちご",
+      "line_index": 16,
+      "text": "あ、ごめんなさい！どんな人が来てるか気になっちゃって……"
+    },
+    {
+      "role": "mayu",
+      "role_label": "まゆ",
+      "line_index": 20,
+      "text": "いつも来てくれる人たち、いる？"
+    },
+    {
+      "role": "ichigo",
+      "role_label": "いちご",
+      "line_index": 17,
+      "text": "はい！最前列に。でも、結構知らない人も来てますね……"
+    },
+    {
+      "role": "kinugawa",
+      "role_label": "鬼怒川",
+      "line_index": 19,
+      "text": "ショッピングモールに買い物にきたついでに来てみたって人も、かなりいるみたいだからな"
+    },
+    {
+      "role": "mayu",
+      "role_label": "まゆ",
+      "line_index": 21,
+      "text": "その人たちって、当然、わたしたちのこと全然知らないんだよね……"
+    },
+    {
+      "role": "ichigo",
+      "role_label": "いちご",
+      "line_index": 18,
+      "text": "そっか……！どうしましょう、急に緊張してきちゃいました"
+    },
+    {
+      "role": "mayu",
+      "role_label": "まゆ",
+      "line_index": 22,
+      "text": "今までは司会者さんや他のアイドルたちがすでに盛り上げてくれてたから、なんの不安もなかったけど、今日はお客さんを一から盛り上げないといけないのか"
+    },
+    {
+      "role": "ichigo",
+      "role_label": "いちご",
+      "line_index": 19,
+      "text": "そういえば、今日はマイクがないんですよね……！歌声、ちゃんと届けられるかな……"
+    },
+    {
+      "role": "kinugawa",
+      "role_label": "鬼怒川",
+      "line_index": 20,
+      "text": "おいおい、今更不安になってどうする"
+    },
+    {
+      "role": "mayu",
+      "role_label": "まゆ",
+      "line_index": 23,
+      "text": "そんなこと言ったって、失敗したらって考えたら急に怖くなっちゃって"
+    },
+    {
+      "role": "kinugawa",
+      "role_label": "鬼怒川",
+      "line_index": 21,
+      "text": "俺は、こんな状況でも二人がライブをやりたいって言ってくれて、正直驚いたけど、嬉しかったんだよ"
+    },
+    {
+      "role": "ichigo",
+      "role_label": "いちご",
+      "line_index": 20,
+      "text": "嬉しかった……？"
+    },
+    {
+      "role": "kinugawa",
+      "role_label": "鬼怒川",
+      "line_index": 22,
+      "text": "俺はこういうイレギュラーが発生すると、すぐに失敗しない方法を探してしまう。でも君たちは、リスクがあってもお客さんが喜んでくれる方法を選んだ"
+    },
+    {
+      "role": "mayu",
+      "role_label": "まゆ",
+      "line_index": 24,
+      "text": "そりゃあ、お客さんの喜ぶ顔がみたくてアイドルやってますから"
+    },
+    {
+      "role": "kinugawa",
+      "role_label": "鬼怒川",
+      "line_index": 23,
+      "text": "その気持ちが伝われば、多少失敗しようがやらかそうが、今日のライブは大成功だ。音楽かけるぞ。気合いれて行ってこい！"
+    },
+    {
+      "role": "mayu",
+      "role_label": "まゆ",
+      "line_index": 25,
+      "text": "……あれ、音楽、鳴りませんね"
+    },
+    {
+      "role": "kinugawa",
+      "role_label": "鬼怒川",
+      "line_index": 24,
+      "text": "あれ？なんで？ちゃんとＣＤ入れたぞ？"
+    },
+    {
+      "role": "kinugawa",
+      "role_label": "鬼怒川",
+      "line_index": 25,
+      "text": "なんで鳴らないんだ？壊れたか？"
+    },
+    {
+      "role": "ichigo",
+      "role_label": "いちご",
+      "line_index": 21,
+      "text": "剛さん！コンセント、抜けちゃってます！"
+    },
+    {
+      "role": "kinugawa",
+      "role_label": "鬼怒川",
+      "line_index": 26,
+      "text": "ああ！そりゃあ再生押しても動かないわけだ！"
+    },
+    {
+      "role": "mayu",
+      "role_label": "まゆ",
+      "line_index": 26,
+      "text": "もうー、せっかくかっこよかったのにー"
+    },
+    {
+      "role": "kinugawa",
+      "role_label": "鬼怒川",
+      "line_index": 27,
+      "text": "す、すまない……"
+    },
+    {
+      "role": "ichigo",
+      "role_label": "いちご",
+      "line_index": 22,
+      "text": "でも、今ので緊張がふっとびました！"
+    },
+    {
+      "role": "mayu",
+      "role_label": "まゆ",
+      "line_index": 27,
+      "text": "そうだね。せっかくの単独、楽しんでいこう！"
+    },
+    {
+      "role": "kinugawa",
+      "role_label": "鬼怒川",
+      "line_index": 28,
+      "text": "やれやれ、だから機械は嫌なんだ……。改めて、行ってこい！"
+    },
+    {
+      "role": "mayu",
+      "role_label": "まゆ",
+      "line_index": 28,
+      "text": "みなさーん！こんにちはー！すごーい、たくさん来てくれてますねー"
+    },
+    {
+      "role": "ichigo",
+      "role_label": "いちご",
+      "line_index": 23,
+      "text": "わあ、まゆちゃんみてください！あそこの人、いちごのシャツ着てます。かわいい～！"
+    },
+    {
+      "role": "mayu",
+      "role_label": "まゆ",
+      "line_index": 29,
+      "text": "いちごちゃん推しなんですか？え？今日たまたま着てきた？"
+    },
+    {
+      "role": "ichigo",
+      "role_label": "いちご",
+      "line_index": 24,
+      "text": "いやそこは、嘘でもいちご推しって言ってくださいよ～"
+    },
+    {
+      "role": "mayu",
+      "role_label": "まゆ",
+      "line_index": 30,
+      "text": "いつもライブ来てくれてる方も、はじめましての方も、今日は一緒に盛り上がっちゃいましょー！"
+    },
+    {
+      "role": "ichigo",
+      "role_label": "いちご",
+      "line_index": 25,
+      "text": "それでは早速一曲目！"
+    },
+    {
+      "role": "futari",
+      "role_label": "ふたり",
+      "line_index": 1,
+      "text": "ミュージック、スタート！"
+    },
+    {
+      "role": "mayu",
+      "role_label": "まゆ",
+      "line_index": 31,
+      "text": "お疲れさまでしたー！"
+    },
+    {
+      "role": "ichigo",
+      "role_label": "いちご",
+      "line_index": 26,
+      "text": "お疲れさまでした！楽しかったですねー！"
+    },
+    {
+      "role": "mayu",
+      "role_label": "まゆ",
+      "line_index": 32,
+      "text": "まさか、イチゴゲームがあんなに盛り上がるとはね"
+    },
+    {
+      "role": "ichigo",
+      "role_label": "いちご",
+      "line_index": 27,
+      "text": "いちご推しになりましたっていろんな人に言われて、嬉しかったです～"
+    },
+    {
+      "role": "kinugawa",
+      "role_label": "鬼怒川",
+      "line_index": 29,
+      "text": "二人ともお疲れ。これ、ショッピングモールから、お詫びの差し入れ"
+    },
+    {
+      "role": "ichigo",
+      "role_label": "いちご",
+      "line_index": 28,
+      "text": "イチゴのケーキに、イチゴのタルト！イチゴ大福もあります！"
+    },
+    {
+      "role": "mayu",
+      "role_label": "まゆ",
+      "line_index": 33,
+      "text": "やったー！みんなで食べよ～"
+    },
+    {
+      "role": "kinugawa",
+      "role_label": "鬼怒川",
+      "line_index": 30,
+      "text": "またぜひお願いしますって言われたよ。いやーしかし疲れた……。音響なんか二度とやりたくないよ……"
+    },
+    {
+      "role": "mayu",
+      "role_label": "まゆ",
+      "line_index": 34,
+      "text": "剛さんが、オフモードになっちゃった"
+    },
+    {
+      "role": "kinugawa",
+      "role_label": "鬼怒川",
+      "line_index": 31,
+      "text": "家のソファーでビール飲みながら恋愛リアリティーショーがみたい"
+    },
+    {
+      "role": "ichigo",
+      "role_label": "いちご",
+      "line_index": 29,
+      "text": "えええ～？剛さん、家ではそんな感じなんですかあ？"
+    },
+    {
+      "role": "kinugawa",
+      "role_label": "鬼怒川",
+      "line_index": 32,
+      "text": "そりゃそうだよ。家に帰ってまでちゃんとしてられないよ"
+    },
+    {
+      "role": "mayu",
+      "role_label": "まゆ",
+      "line_index": 35,
+      "text": "剛さん、差し入れのスイーツ、食べます？"
+    },
+    {
+      "role": "kinugawa",
+      "role_label": "鬼怒川",
+      "line_index": 33,
+      "text": "今はいい……。ビールとポテチが欲しい……"
+    },
+    {
+      "role": "ichigo",
+      "role_label": "いちご",
+      "line_index": 30,
+      "text": "なんか……普段とギャップすごい……"
+    },
+    {
+      "role": "mayu",
+      "role_label": "まゆ",
+      "line_index": 36,
+      "text": "剛さん！今から運転して、事務所まで戻るんですからね。ほら、最後の力を振り絞ってください！"
+    },
+    {
+      "role": "kinugawa",
+      "role_label": "鬼怒川",
+      "line_index": 34,
+      "text": "うぐぐ……。（無理やり）仕事モード……オン！よし！帰るぞ！"
+    },
+    {
+      "role": "futari",
+      "role_label": "ふたり",
+      "line_index": 2,
+      "text": "はい！"
+    }
+  ]
+}
