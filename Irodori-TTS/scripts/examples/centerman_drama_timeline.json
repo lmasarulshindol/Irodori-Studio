@@ -1,0 +1,105 @@
+{
+  "sample_rate": 48000,
+  "clips": [
+    {
+      "_note": "【ナレーション】オープニング — 渋い声でタイトルコール",
+      "wav": "../../outputs/centerman_drama/01_narration_opening.wav",
+      "pause_after_ms": 1200
+    },
+    {
+      "_note": "【女性】助けを求める叫び — 緊迫",
+      "wav": "../../outputs/centerman_drama/02_woman_help.wav",
+      "pause_after_ms": 400
+    },
+    {
+      "_note": "【チンピラ】嘲笑 — 畳みかけ",
+      "wav": "../../outputs/centerman_drama/03_thug_taunt.wav",
+      "pause_after_ms": 300
+    },
+    {
+      "_note": "【チンピラ】脅迫 — 間を詰めない",
+      "wav": "../../outputs/centerman_drama/04_thug_threat.wav",
+      "pause_after_ms": 600
+    },
+    {
+      "_note": "【女性】絶望 — 沈黙が恐怖を強調",
+      "wav": "../../outputs/centerman_drama/05_woman_despair.wav",
+      "pause_after_ms": 1500
+    },
+    {
+      "_note": "【センターマン】登場！ — 長めの溜めから一気に",
+      "wav": "../../outputs/centerman_drama/06_center_entrance.wav",
+      "pause_after_ms": 500
+    },
+    {
+      "_note": "【チンピラ】誰だ？ — 即リアクション",
+      "wav": "../../outputs/centerman_drama/07_thug_who.wav",
+      "pause_after_ms": 800
+    },
+    {
+      "_note": "【センターマン】決め台詞① — 溜めてから",
+      "wav": "../../outputs/centerman_drama/08_center_catchphrase.wav",
+      "pause_after_ms": 600
+    },
+    {
+      "_note": "【センターマン】七三！ — テンション上げ",
+      "wav": "../../outputs/centerman_drama/09_center_nanahisan.wav",
+      "pause_after_ms": 500
+    },
+    {
+      "_note": "【チンピラ】半分裸!? — 困惑",
+      "wav": "../../outputs/centerman_drama/10_thug_shock.wav",
+      "pause_after_ms": 300
+    },
+    {
+      "_note": "【センターマン】替え歌 — ノリノリ",
+      "wav": "../../outputs/centerman_drama/11_center_song.wav",
+      "pause_after_ms": 200
+    },
+    {
+      "_note": "【チンピラ】パニック逃走 — すぐ逃げる",
+      "wav": "../../outputs/centerman_drama/12_thug_flee.wav",
+      "pause_after_ms": 1200
+    },
+    {
+      "_note": "【センターマン】優しく声かけ — 余韻",
+      "wav": "../../outputs/centerman_drama/13_center_gentle.wav",
+      "pause_after_ms": 500
+    },
+    {
+      "_note": "【女性】お礼を言いかけ… — 振り返る間",
+      "wav": "../../outputs/centerman_drama/14_woman_thanks.wav",
+      "pause_after_ms": 1000
+    },
+    {
+      "_note": "【センターマン】自己紹介 — カッコつけ",
+      "wav": "../../outputs/centerman_drama/15_center_introduce.wav",
+      "pause_after_ms": 300
+    },
+    {
+      "_note": "【女性】悲鳴！！ — ギャグのピーク、間を置かない",
+      "wav": "../../outputs/centerman_drama/16_woman_scream.wav",
+      "pause_after_ms": 200
+    },
+    {
+      "_note": "【センターマン】慌てる — 即弁解",
+      "wav": "../../outputs/centerman_drama/17_center_panic.wav",
+      "pause_after_ms": 300
+    },
+    {
+      "_note": "【女性】逃走 — テンポよく",
+      "wav": "../../outputs/centerman_drama/18_woman_run.wav",
+      "pause_after_ms": 2000
+    },
+    {
+      "_note": "【センターマン】しょんぼり — 長い沈黙で哀愁",
+      "wav": "../../outputs/centerman_drama/19_center_sad.wav",
+      "pause_after_ms": 1500
+    },
+    {
+      "_note": "【ナレーション】エンディング — 締め",
+      "wav": "../../outputs/centerman_drama/20_narration_ending.wav",
+      "pause_after_ms": 0
+    }
+  ]
+}

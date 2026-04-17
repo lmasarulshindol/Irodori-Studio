@@ -1,0 +1,118 @@
+{
+  "hf_checkpoint": "Aratako/Irodori-TTS-500M-v2-VoiceDesign",
+  "model_device": "cpu",
+  "codec_device": "cpu",
+  "codec_repo": "Aratako/Semantic-DACVAE-Japanese-32dim",
+  "model_precision": "fp32",
+  "codec_precision": "fp32",
+  "codec_deterministic_encode": true,
+  "codec_deterministic_decode": true,
+  "enable_watermark": false,
+  "compile_model": false,
+  "compile_dynamic": false,
+  "num_steps": 20,
+  "seed": null,
+  "no_ref": true,
+  "items": [
+    {
+      "text": "公平戦士センターマン。それは半分は正義、もう半分は裸の男。今宵もまた、不公平な世界に正義の踊りが炸裂する！",
+      "caption": "落ち着いた男性の声。低くて渋い、ナレーション口調。",
+      "output_wav": "outputs/centerman_drama/01_narration_opening.wav"
+    },
+    {
+      "text": "いやっ……やめてっ！　誰か助けて！",
+      "caption": "若い女性の声。恐怖で震えている、切迫した叫び。",
+      "output_wav": "outputs/centerman_drama/02_woman_help.wav"
+    },
+    {
+      "text": "へへへ、叫んだって無駄だぜ。こんな夜道に誰も来やしねえよ。",
+      "caption": "低くてガラの悪い男の声。ドスの効いた、下卑た笑い。",
+      "output_wav": "outputs/centerman_drama/03_thug_taunt.wav"
+    },
+    {
+      "text": "おとなしくバッグを渡しな。さもなきゃ……わかってるよな？",
+      "caption": "低くてガラの悪い男の声。脅すように凄む。",
+      "output_wav": "outputs/centerman_drama/04_thug_threat.wav"
+    },
+    {
+      "text": "やだ……誰か……お願い……！",
+      "caption": "若い女性の声。泣きそうな小声、絶望的。",
+      "output_wav": "outputs/centerman_drama/05_woman_despair.wav"
+    },
+    {
+      "text": "そこまでだ！",
+      "caption": "張りのある中年男性の声。高い場所から響くように力強い、ヒーローの登場。",
+      "output_wav": "outputs/centerman_drama/06_center_entrance.wav"
+    },
+    {
+      "text": "あぁん？　誰だてめえは！",
+      "caption": "低くてガラの悪い男の声。苛立ちと驚き。",
+      "output_wav": "outputs/centerman_drama/07_thug_who.wav"
+    },
+    {
+      "text": "お前、その女性の荷物と安全。本当に公平に分けたつもりなのかい？",
+      "caption": "張りのある中年男性の声。自信に満ちた決め台詞、堂々と。",
+      "output_wav": "outputs/centerman_drama/08_center_catchphrase.wav"
+    },
+    {
+      "text": "人は五分だ五分だと言うけれど！　本当は七三くらいがちょうどいい！",
+      "caption": "張りのある中年男性の声。テンション高く叫ぶ、楽しげ。",
+      "output_wav": "outputs/centerman_drama/09_center_nanahisan.wav"
+    },
+    {
+      "text": "な、なんだこいつ……半分裸じゃねえか！　しかもツルツルだぞ……！？",
+      "caption": "低くてガラの悪い男の声。困惑と恐怖が混ざった動揺。",
+      "output_wav": "outputs/centerman_drama/10_thug_shock.wav"
+    },
+    {
+      "text": "お前は不幸ぅ！　お前は馬ぁーか！　本当に平等なのかぁ！",
+      "caption": "張りのある中年男性の声。歌うようにリズミカル、替え歌ノリ。",
+      "output_wav": "outputs/centerman_drama/11_center_song.wav"
+    },
+    {
+      "text": "ひいいいっ！　や、やべえ！　こいつ頭おかしい！　逃げろっ！",
+      "caption": "低くてガラの悪い男の声。パニック、完全にビビって叫ぶ。",
+      "output_wav": "outputs/centerman_drama/12_thug_flee.wav"
+    },
+    {
+      "text": "ふっ……悪は去った。もう大丈夫だよ、お嬢さん。",
+      "caption": "張りのある中年男性の声。やさしくキザに、余裕たっぷり。",
+      "output_wav": "outputs/centerman_drama/13_center_gentle.wav"
+    },
+    {
+      "text": "あ、ありがとうございま……",
+      "caption": "若い女性の声。安堵しかけて、途中で言葉が止まる。",
+      "output_wav": "outputs/centerman_drama/14_woman_thanks.wav"
+    },
+    {
+      "text": "怖がらなくていい。公平戦士、ザ・センターマンが来たからには……",
+      "caption": "張りのある中年男性の声。胸を張って自己紹介、カッコつけ。",
+      "output_wav": "outputs/centerman_drama/15_center_introduce.wav"
+    },
+    {
+      "text": "きゃああああああ！！　変態！！　半分裸の変態が来たぁー！！",
+      "caption": "若い女性の声。最大音量の絶叫、恐怖と嫌悪。",
+      "output_wav": "outputs/centerman_drama/16_woman_scream.wav"
+    },
+    {
+      "text": "え……ちょ、待って！　違うんだ！　これはコスチュームで……！",
+      "caption": "張りのある中年男性の声。慌てふためいて弁解、うろたえ。",
+      "output_wav": "outputs/centerman_drama/17_center_panic.wav"
+    },
+    {
+      "text": "来ないでぇ！！　さっきの人より怖いよぉ！！",
+      "caption": "若い女性の声。泣き叫びながら全力ダッシュ、距離が遠ざかる。",
+      "output_wav": "outputs/centerman_drama/18_woman_run.wav"
+    },
+    {
+      "text": "これは正義の証なのに……僕の左半身はスーツなのに……。",
+      "caption": "張りのある中年男性の声。しょんぼりと独り言、泣きそう。",
+      "output_wav": "outputs/centerman_drama/19_center_sad.wav"
+    },
+    {
+      "text": "こうしてセンターマンは今日も一人。正義を貫くには、まず服を着ろ……という教訓を、彼はまだ知らない。",
+      "caption": "落ち着いた男性の声。低くて渋い、ナレーション口調。哀愁を帯びた締め。",
+      "output_wav": "outputs/centerman_drama/20_narration_ending.wav"
+    }
+  ]
+}
