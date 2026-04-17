@@ -1,0 +1,264 @@
+{
+  "hf_checkpoint": "Aratako/Irodori-TTS-500M-v2-VoiceDesign",
+  "model_device": "cpu",
+  "codec_device": "cpu",
+  "codec_repo": "Aratako/Semantic-DACVAE-Japanese-32dim",
+  "model_precision": "fp32",
+  "codec_precision": "fp32",
+  "codec_deterministic_encode": true,
+  "codec_deterministic_decode": true,
+  "enable_watermark": false,
+  "compile_model": false,
+  "compile_dynamic": false,
+  "num_steps": 20,
+  "seed": 20260417,
+  "no_ref": true,
+  "caption": null,
+  "items": [
+    {
+      "text": "わっ……おっきい……",
+      "caption": "【話者固定】10歳の少女。やや高めで明瞭な子供の声質。BabyDollキャスト佐藤莉子。このセリフの演技: 本物の驚き。小悪魔の仮面が一瞬外れた、目を丸くした素の反応。",
+      "output_wav": "outputs/babydoll_ep2_matt/002_莉子.wav"
+    },
+    {
+      "text": "あたしの手より、ずっと大きいよ……？　これ、ほんとに入るのかなぁ",
+      "caption": "【話者固定】10歳の少女。やや高めで明瞭な子供の声質。BabyDollキャスト佐藤莉子。このセリフの演技: 両手で包みながら困惑。本当に不安が混ざった、子供っぽい計算。",
+      "output_wav": "outputs/babydoll_ep2_matt/003_莉子.wav"
+    },
+    {
+      "text": "……ちゅっ",
+      "caption": "【話者固定】10歳の少女。やや高めで明瞭な子供の声質。BabyDollキャスト佐藤莉子。このセリフの演技: 先端にそっとキスする音。小さく、丁寧に。研修通りの手順だが、唇が緊張で震えている。",
+      "output_wav": "outputs/babydoll_ep2_matt/004_莉子.wav"
+    },
+    {
+      "text": "しょっぱい。男の人の味、こんなんなんだ",
+      "caption": "【話者固定】10歳の少女。やや高めで明瞭な子供の声質。BabyDollキャスト佐藤莉子。このセリフの演技: 率直な感想。子供の正直さがそのまま出た、小悪魔ではない素のリアクション。",
+      "output_wav": "outputs/babydoll_ep2_matt/005_莉子.wav"
+    },
+    {
+      "text": "んっ……んぅ……ん……っ",
+      "caption": "【話者固定】10歳の少女。やや高めで明瞭な子供の声質。BabyDollキャスト佐藤莉子。このセリフの演技: 口に含んで懸命に動く。息が鼻に抜ける。不慣れだが一生懸命。",
+      "output_wav": "outputs/babydoll_ep2_matt/006_莉子.wav"
+    },
+    {
+      "text": "歯、当たってない？　痛くない？",
+      "caption": "【話者固定】10歳の少女。やや高めで明瞭な子供の声質。BabyDollキャスト佐藤莉子。このセリフの演技: 口を離して心配そうに見上げる。プロとして確認する真剣な目。",
+      "output_wav": "outputs/babydoll_ep2_matt/007_莉子.wav"
+    },
+    {
+      "text": "……大丈夫。気持ちいい",
+      "caption": "【話者固定】30代前半の男性。やや低めで疲労感のある声質。感情は抑えがち。このセリフの演技: 絞り出すように。嘘ではない。",
+      "output_wav": "outputs/babydoll_ep2_matt/008_健吾.wav"
+    },
+    {
+      "text": "ほんと？　じゃあ……もうちょっと、がんばる",
+      "caption": "【話者固定】10歳の少女。やや高めで明瞭な子供の声質。BabyDollキャスト佐藤莉子。このセリフの演技: 嬉しそうに目を細めてから、覚悟を決めて口を開く。必死さと健気さが混ざる。",
+      "output_wav": "outputs/babydoll_ep2_matt/009_莉子.wav"
+    },
+    {
+      "text": "ん……ふ……んんっ……っ！",
+      "caption": "【話者固定】10歳の少女。やや高めで明瞭な子供の声質。BabyDollキャスト佐藤莉子。このセリフの演技: 奥まで咥えようとして苦しそうにえずく。それでも離さない意地。息が荒い。",
+      "output_wav": "outputs/babydoll_ep2_matt/010_莉子.wav"
+    },
+    {
+      "text": "莉子……出る……",
+      "caption": "【話者固定】30代前半の男性。やや低めで疲労感のある声質。感情は抑えがち。このセリフの演技: 掠れた警告。限界の声。",
+      "output_wav": "outputs/babydoll_ep2_matt/011_健吾.wav"
+    },
+    {
+      "text": "ん——っ！？　んんっ、んぅ……っ",
+      "caption": "【話者固定】10歳の少女。やや高めで明瞭な子供の声質。BabyDollキャスト佐藤莉子。このセリフの演技: 口の中に出された衝撃。目を見開いて驚く。量と勢いに翻弄される。",
+      "output_wav": "outputs/babydoll_ep2_matt/012_莉子.wav"
+    },
+    {
+      "text": "……んく……っ",
+      "caption": "【話者固定】10歳の少女。やや高めで明瞭な子供の声質。BabyDollキャスト佐藤莉子。このセリフの演技: 必死に飲み込もうとする。喉が動く音。こぼさないように頑張る。",
+      "output_wav": "outputs/babydoll_ep2_matt/013_莉子.wav"
+    },
+    {
+      "text": "……はぁっ……飲め、た……？",
+      "caption": "【話者固定】10歳の少女。やや高めで明瞭な子供の声質。BabyDollキャスト佐藤莉子。このセリフの演技: 口を離して確認。唇の端を拭いながら、達成感と戸惑いが混ざった顔。",
+      "output_wav": "outputs/babydoll_ep2_matt/014_莉子.wav"
+    },
+    {
+      "text": "にがっ……。でも、健吾さんのだから、いい",
+      "caption": "【話者固定】10歳の少女。やや高めで明瞭な子供の声質。BabyDollキャスト佐藤莉子。このセリフの演技: 顔をしかめた直後に、ふわりとやわらかく笑う。小悪魔でも演技でもない、素の一言。",
+      "output_wav": "outputs/babydoll_ep2_matt/015_莉子.wav"
+    },
+    {
+      "text": "……ねぇ、健吾さん",
+      "caption": "【話者固定】10歳の少女。やや高めで明瞭な子供の声質。BabyDollキャスト佐藤莉子。このセリフの演技: おずおずと切り出す。小悪魔モードが薄れた、やわらかい声。",
+      "output_wav": "outputs/babydoll_ep2_matt/016_莉子.wav"
+    },
+    {
+      "text": "あたしのことも……触って、ほしいな",
+      "caption": "【話者固定】10歳の少女。やや高めで明瞭な子供の声質。BabyDollキャスト佐藤莉子。このセリフの演技: 恥ずかしそうに目を逸らしながら。台本にない自分の言葉。吐息混じり。",
+      "output_wav": "outputs/babydoll_ep2_matt/017_莉子.wav"
+    },
+    {
+      "text": "……いいのか",
+      "caption": "【話者固定】30代前半の男性。やや低めで疲労感のある声質。感情は抑えがち。このセリフの演技: 低く短く確認。自分の手が震えているのを隠せない。",
+      "output_wav": "outputs/babydoll_ep2_matt/018_健吾.wav"
+    },
+    {
+      "text": "……うん。お願い",
+      "caption": "【話者固定】10歳の少女。やや高めで明瞭な子供の声質。BabyDollキャスト佐藤莉子。このセリフの演技: 小さく頷きながら。素の10歳の女の子が、信頼している相手に許可を出す声。",
+      "output_wav": "outputs/babydoll_ep2_matt/019_莉子.wav"
+    },
+    {
+      "text": "ひゃっ……！",
+      "caption": "【話者固定】10歳の少女。やや高めで明瞭な子供の声質。BabyDollキャスト佐藤莉子。このセリフの演技: 指が触れた瞬間の短い悲鳴。体がびくんと跳ねる。",
+      "output_wav": "outputs/babydoll_ep2_matt/020_莉子.wav"
+    },
+    {
+      "text": "……っ、そこ……なんか、へん……っ",
+      "caption": "【話者固定】10歳の少女。やや高めで明瞭な子供の声質。BabyDollキャスト佐藤莉子。このセリフの演技: 未知の感覚に翻弄される。語彙が消えて、子供の言葉しか出ない。",
+      "output_wav": "outputs/babydoll_ep2_matt/021_莉子.wav"
+    },
+    {
+      "text": "や……っ、やだ、声、出ちゃ……っ",
+      "caption": "【話者固定】10歳の少女。やや高めで明瞭な子供の声質。BabyDollキャスト佐藤莉子。このセリフの演技: 自分の声を抑えようとして失敗する。恥ずかしさと快感が混ざった混乱。",
+      "output_wav": "outputs/babydoll_ep2_matt/022_莉子.wav"
+    },
+    {
+      "text": "けんご、さ……っ、……そこ、だめ……っ、すごい……っ",
+      "caption": "【話者固定】10歳の少女。やや高めで明瞭な子供の声質。BabyDollキャスト佐藤莉子。このセリフの演技: 敬称すら崩れかける。呼吸が浅く速い。",
+      "output_wav": "outputs/babydoll_ep2_matt/023_莉子.wav"
+    },
+    {
+      "text": "なに……これ……っ、こわ……い、けど……止めないで……っ",
+      "caption": "【話者固定】10歳の少女。やや高めで明瞭な子供の声質。BabyDollキャスト佐藤莉子。このセリフの演技: 矛盾した懇願。恐怖と快感の境界で揺れる素の反応。涙声。",
+      "output_wav": "outputs/babydoll_ep2_matt/024_莉子.wav"
+    },
+    {
+      "text": "あっ——あああっ——！",
+      "caption": "【話者固定】10歳の少女。やや高めで明瞭な子供の声質。BabyDollキャスト佐藤莉子。このセリフの演技: 初めての絶頂。体が大きく震えて声が裏返る。自分に何が起きたかわからない叫び。",
+      "output_wav": "outputs/babydoll_ep2_matt/025_莉子.wav"
+    },
+    {
+      "text": "……は……ぁ……なに、いまの……",
+      "caption": "【話者固定】10歳の少女。やや高めで明瞭な子供の声質。BabyDollキャスト佐藤莉子。このセリフの演技: 余韻に浸りながら呆然。全身の力が抜けている。",
+      "output_wav": "outputs/babydoll_ep2_matt/026_莉子.wav"
+    },
+    {
+      "text": "……イったんだ、莉子",
+      "caption": "【話者固定】30代前半の男性。やや低めで疲労感のある声質。感情は抑えがち。このセリフの演技: 静かに、事実を伝えるように。やわらかい声。",
+      "output_wav": "outputs/babydoll_ep2_matt/027_健吾.wav"
+    },
+    {
+      "text": "え……あたし、イったの……？　これが……？",
+      "caption": "【話者固定】10歳の少女。やや高めで明瞭な子供の声質。BabyDollキャスト佐藤莉子。このセリフの演技: 自分の体験を理解しようとする戸惑い。小悪魔の知識にない、本物の初体験の動揺。",
+      "output_wav": "outputs/babydoll_ep2_matt/028_莉子.wav"
+    },
+    {
+      "text": "……入れて、健吾さん。もう、大丈夫だから",
+      "caption": "【話者固定】10歳の少女。やや高めで明瞭な子供の声質。BabyDollキャスト佐藤莉子。このセリフの演技: 覚悟を決めた静かな宣言。強がりではなく、さっきイけたことで信頼が深まった声。",
+      "output_wav": "outputs/babydoll_ep2_matt/029_莉子.wav"
+    },
+    {
+      "text": "……痛かったら、すぐ言え",
+      "caption": "【話者固定】30代前半の男性。やや低めで疲労感のある声質。感情は抑えがち。このセリフの演技: 掠れた声。約束するように低く短く。",
+      "output_wav": "outputs/babydoll_ep2_matt/030_健吾.wav"
+    },
+    {
+      "text": "いっ……ぁ……っ",
+      "caption": "【話者固定】10歳の少女。やや高めで明瞭な子供の声質。BabyDollキャスト佐藤莉子。このセリフの演技: 挿入の痛みに息を呑む。前回より覚悟はあるが、痛みは変わらない。短く鋭い声。",
+      "output_wav": "outputs/babydoll_ep2_matt/031_莉子.wav"
+    },
+    {
+      "text": "痛……い……けど……前より……っ、前よりは……っ",
+      "caption": "【話者固定】10歳の少女。やや高めで明瞭な子供の声質。BabyDollキャスト佐藤莉子。このセリフの演技: 必死に比較しようとする。自分に言い聞かせている。",
+      "output_wav": "outputs/babydoll_ep2_matt/032_莉子.wav"
+    },
+    {
+      "text": "ゆっくりでいい。無理するな",
+      "caption": "【話者固定】30代前半の男性。やや低めで疲労感のある声質。感情は抑えがち。このセリフの演技: 掠れた声で、自分を律するように。",
+      "output_wav": "outputs/babydoll_ep2_matt/033_健吾.wav"
+    },
+    {
+      "text": "……ん……動いて、いいよ",
+      "caption": "【話者固定】10歳の少女。やや高めで明瞭な子供の声質。BabyDollキャスト佐藤莉子。このセリフの演技: 痛みを受け入れた静かな許可。歯を食いしばった後の、ほんの少しの余裕。",
+      "output_wav": "outputs/babydoll_ep2_matt/034_莉子.wav"
+    },
+    {
+      "text": "あっ……ぁ……ん……っ",
+      "caption": "【話者固定】10歳の少女。やや高めで明瞭な子供の声質。BabyDollキャスト佐藤莉子。このセリフの演技: ゆっくりした動きに合わせて漏れる声。痛みと別の何かが混ざり始める。",
+      "output_wav": "outputs/babydoll_ep2_matt/035_莉子.wav"
+    },
+    {
+      "text": "……ぁ……なんか……さっきの、感じ……っ",
+      "caption": "【話者固定】10歳の少女。やや高めで明瞭な子供の声質。BabyDollキャスト佐藤莉子。このセリフの演技: 指の時と同じ感覚が内側から来ることへの戸惑い。もっと深くて強い。",
+      "output_wav": "outputs/babydoll_ep2_matt/036_莉子.wav"
+    },
+    {
+      "text": "やっ……健吾さ……っ、そこ……っ、そこすごい……っ！",
+      "caption": "【話者固定】10歳の少女。やや高めで明瞭な子供の声質。BabyDollキャスト佐藤莉子。このセリフの演技: 特定の角度で声が跳ね上がる。自分でも止められない反応。",
+      "output_wav": "outputs/babydoll_ep2_matt/037_莉子.wav"
+    },
+    {
+      "text": "だめ……っ、また……来る……っ、こわい……っ",
+      "caption": "【話者固定】10歳の少女。やや高めで明瞭な子供の声質。BabyDollキャスト佐藤莉子。このセリフの演技: 2回目の波が近づく恐怖と期待。涙声だが止めてとは言わない。",
+      "output_wav": "outputs/babydoll_ep2_matt/038_莉子.wav"
+    },
+    {
+      "text": "あっ——ぁあっ——！",
+      "caption": "【話者固定】10歳の少女。やや高めで明瞭な子供の声質。BabyDollキャスト佐藤莉子。このセリフの演技: 2回目の絶頂。体が弓なりになって声が途切れる。1回目より長く深い。",
+      "output_wav": "outputs/babydoll_ep2_matt/039_莉子.wav"
+    },
+    {
+      "text": "はぁ……はぁ……っ、……すご……っ",
+      "caption": "【話者固定】10歳の少女。やや高めで明瞭な子供の声質。BabyDollキャスト佐藤莉子。このセリフの演技: 絶頂の余韻。目が潤んで焦点が合っていない。",
+      "output_wav": "outputs/babydoll_ep2_matt/040_莉子.wav"
+    },
+    {
+      "text": "大丈夫か",
+      "caption": "【話者固定】30代前半の男性。やや低めで疲労感のある声質。感情は抑えがち。このセリフの演技: 動きを止めて確認。低く優しい。",
+      "output_wav": "outputs/babydoll_ep2_matt/041_健吾.wav"
+    },
+    {
+      "text": "……やめないで……っ。止まると……さみしい……",
+      "caption": "【話者固定】10歳の少女。やや高めで明瞭な子供の声質。BabyDollキャスト佐藤莉子。このセリフの演技: 自分でも意外な本音。小悪魔の台本にない言葉がこぼれる。",
+      "output_wav": "outputs/babydoll_ep2_matt/042_莉子.wav"
+    },
+    {
+      "text": "健吾さん……もっと……っ",
+      "caption": "【話者固定】10歳の少女。やや高めで明瞭な子供の声質。BabyDollキャスト佐藤莉子。このセリフの演技: 自分から腰を動かそうとする。不器用だが、求める意志がある。",
+      "output_wav": "outputs/babydoll_ep2_matt/043_莉子.wav"
+    },
+    {
+      "text": "あっ……ん……っ、……いい……っ、奥……気持ちいい……っ",
+      "caption": "【話者固定】10歳の少女。やや高めで明瞭な子供の声質。BabyDollキャスト佐藤莉子。このセリフの演技: 語彙が溶けていく。10歳の子供の言葉しか残っていない。",
+      "output_wav": "outputs/babydoll_ep2_matt/044_莉子.wav"
+    },
+    {
+      "text": "健吾さんっ……健吾さんっ……健吾さん……っ！",
+      "caption": "【話者固定】10歳の少女。やや高めで明瞭な子供の声質。BabyDollキャスト佐藤莉子。このセリフの演技: 名前を繰り返す。しがみつきながら、他に言葉が見つからない。切なく必死。",
+      "output_wav": "outputs/babydoll_ep2_matt/045_莉子.wav"
+    },
+    {
+      "text": "また……来る……っ！　健吾さ——っ！",
+      "caption": "【話者固定】10歳の少女。やや高めで明瞭な子供の声質。BabyDollキャスト佐藤莉子。このセリフの演技: 3回目の絶頂の直前。声が裏返って途切れる。",
+      "output_wav": "outputs/babydoll_ep2_matt/046_莉子.wav"
+    },
+    {
+      "text": "——っっ！！",
+      "caption": "【話者固定】10歳の少女。やや高めで明瞭な子供の声質。BabyDollキャスト佐藤莉子。このセリフの演技: 3回目の絶頂。声にならない叫び。体が激しく震える。",
+      "output_wav": "outputs/babydoll_ep2_matt/047_莉子.wav"
+    },
+    {
+      "text": "莉子……俺も……もう……",
+      "caption": "【話者固定】30代前半の男性。やや低めで疲労感のある声質。感情は抑えがち。このセリフの演技: 限界を告げる掠れた声。名前を呼んでしまう。",
+      "output_wav": "outputs/babydoll_ep2_matt/048_健吾.wav"
+    },
+    {
+      "text": "中に……っ、出して……っ、いっしょに……っ！",
+      "caption": "【話者固定】10歳の少女。やや高めで明瞭な子供の声質。BabyDollキャスト佐藤莉子。このセリフの演技: 絶頂の余韻の中で求める。台本ではない、素の懇願。",
+      "output_wav": "outputs/babydoll_ep2_matt/049_莉子.wav"
+    },
+    {
+      "text": "あっ——あったかっ……！　あぁっ——！",
+      "caption": "【話者固定】10歳の少女。やや高めで明瞭な子供の声質。BabyDollキャスト佐藤莉子。このセリフの演技: 中出しの熱さと同時に4回目の絶頂。声が遠くへ飛んでいくように掠れる。全身で感じている。",
+      "output_wav": "outputs/babydoll_ep2_matt/050_莉子.wav"
+    }
+  ]
+}
