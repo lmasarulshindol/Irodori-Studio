@@ -1,0 +1,137 @@
+{
+  "hf_checkpoint": "Aratako/Irodori-TTS-500M-v2-VoiceDesign",
+  "model_device": "cuda",
+  "codec_device": "cuda",
+  "codec_repo": "Aratako/Semantic-DACVAE-Japanese-32dim",
+  "model_precision": "fp32",
+  "codec_precision": "fp32",
+  "codec_deterministic_encode": true,
+  "codec_deterministic_decode": true,
+  "enable_watermark": false,
+  "compile_model": false,
+  "compile_dynamic": false,
+  "num_steps": 40,
+  "seed": 20260418,
+  "cfg_scale_text": 3.0,
+  "cfg_scale_caption": 3.0,
+  "no_ref": true,
+  "caption": "やや高めで明瞭な少女の声。近い距離感の話者。",
+  "items": [
+    {
+      "text": "ねえ……お兄さん。⏸️ いま、ひとり？",
+      "caption": "近所で声をかける。甘くて少し挑発的。テンポはゆったりめ。",
+      "gap_after": 0.8,
+      "output_wav": "outputs/n000001_ai_scene/001_アイ.wav"
+    },
+    {
+      "text": "ちょっとだけ……こっち来ない？ 😏 ⏸️ 内緒の話、があるの。",
+      "caption": "声を落とし、悪戯っぽく誘う。自信があるように見せて少しだけ緊張している。",
+      "gap_after": 1.0,
+      "output_wav": "outputs/n000001_ai_scene/002_アイ.wav"
+    },
+    {
+      "text": "🫣 ……ねえ。⏸️ キス……していい？",
+      "caption": "恥じらいが先に立つ。声は小さく、語尾に震え。テンポは遅め。",
+      "gap_after": 1.2,
+      "output_wav": "outputs/n000001_ai_scene/003_アイ.wav"
+    },
+    {
+      "text": "💋 ん……っ ⏸️ ……ん、ふ……っ",
+      "caption": "キスの最中。鼻にかかる吐息。言葉にならない。",
+      "gap_after": 0.6,
+      "output_wav": "outputs/n000001_ai_scene/004_アイ.wav"
+    },
+    {
+      "text": "……ふふっ。⏸️ お兄さんの唇……あったかい。",
+      "caption": "ドライな近接マイク。余韻を楽しむように微笑む。甘え混じりの囁き。",
+      "seconds": 12,
+      "tail_std_threshold": 0.07,
+      "gap_after": 1.0,
+      "output_wav": "outputs/n000001_ai_scene/005_アイ.wav"
+    },
+    {
+      "text": "🫣 ……もっと、さわって……いい？",
+      "caption": "自分から踏み込む。声が震える。恥じらいと期待が混ざる。ゆっくり。",
+      "gap_after": 0.8,
+      "output_wav": "outputs/n000001_ai_scene/006_アイ.wav"
+    },
+    {
+      "text": "😮 ひゃっ……！⏸️ そこ……だめ……っ",
+      "caption": "不意の刺激に短い悲鳴。驚きで息をのむ。",
+      "gap_after": 0.5,
+      "output_wav": "outputs/n000001_ai_scene/007_アイ.wav"
+    },
+    {
+      "text": "🌬️ やだ……声……止まんない……っ",
+      "caption": "呼吸が荒くなる。声を抑えたいのに漏れてしまう。恥ずかしさで言葉が途切れる。",
+      "gap_after": 0.6,
+      "output_wav": "outputs/n000001_ai_scene/008_アイ.wav"
+    },
+    {
+      "text": "⏸️ ……ね、お兄さん。⏸️ わたしが……してあげる。ここ座って？",
+      "caption": "一拍の沈黙のあと、声色を切り替える。大人ぶって誘導するが緊張が隠せない。",
+      "gap_after": 1.2,
+      "output_wav": "outputs/n000001_ai_scene/009_アイ.wav"
+    },
+    {
+      "text": "👅 ん……っ、ふ……ぅ 🥵 ……んん……っ",
+      "caption": "口元に集中している。呼吸が浅く、吐息交じり。",
+      "gap_after": 0.8,
+      "output_wav": "outputs/n000001_ai_scene/010_アイ.wav"
+    },
+    {
+      "text": "⏸️ ……もう……我慢できないの。⏸️ 入れて……？ 🙏",
+      "caption": "切実さが急に乗る。間を挟んで懇願する。声が熱を帯びる。",
+      "gap_after": 1.0,
+      "output_wav": "outputs/n000001_ai_scene/011_アイ.wav"
+    },
+    {
+      "text": "初めて……だから。⏸️ 生がいいの。🥺 ……ダメ？",
+      "caption": "おねだり。小さな声で、でもはっきり。最後の「ダメ？」は震える。",
+      "gap_after": 1.5,
+      "output_wav": "outputs/n000001_ai_scene/012_アイ.wav"
+    },
+    {
+      "text": "😮 ……っ！⏸️ あ……入って……きた……っ",
+      "caption": "挿入の瞬間。息をのむ。途切れ途切れに言葉が出る。",
+      "gap_after": 0.6,
+      "output_wav": "outputs/n000001_ai_scene/013_アイ.wav"
+    },
+    {
+      "text": "😖 いたっ……けど……っ ⏸️ ……動いて……いいよ……っ",
+      "caption": "痛みと快楽の境。泣きそうな声。でも止めないでほしい。",
+      "gap_after": 0.5,
+      "output_wav": "outputs/n000001_ai_scene/014_アイ.wav"
+    },
+    {
+      "text": "🥵 あっ……お兄さ……っ、そこ……っ、奥……っ",
+      "caption": "理性が薄れる。喘ぎ混じりで言葉がつながらない。テンポが崩れる。",
+      "gap_after": 0.4,
+      "output_wav": "outputs/n000001_ai_scene/015_アイ.wav"
+    },
+    {
+      "text": "🥵 だめ……っ、なんか……くるっ……きちゃう……っ",
+      "caption": "焦りと高まり。声が裏返りそう。自分でも止められない。",
+      "gap_after": 0.3,
+      "output_wav": "outputs/n000001_ai_scene/016_アイ.wav"
+    },
+    {
+      "text": "🙏 なかに……っ、ぜんぶ……出して……っっ",
+      "caption": "涙声で懇願。荒い呼吸の合間にかろうじて言葉を出す。",
+      "gap_after": 0.3,
+      "output_wav": "outputs/n000001_ai_scene/017_アイ.wav"
+    },
+    {
+      "text": "🥵 あっ——ああっ——！！",
+      "caption": "絶頂。声が裏返る叫び。声の芯は同じ少女のまま。",
+      "gap_after": 2.0,
+      "output_wav": "outputs/n000001_ai_scene/018_アイ.wav"
+    },
+    {
+      "text": "😮‍💨 ……はぁ……っ ⏸️ ……なに、いまの……すごかった……",
+      "caption": "放心。吐息だらけの細い声。言葉が途切れ途切れ。",
+      "gap_after": 0.0,
+      "output_wav": "outputs/n000001_ai_scene/019_アイ.wav"
+    }
+  ]
+}
